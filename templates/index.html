@@ -499,3 +499,30 @@ setAll();
  restore();
 })();
 </script>
+
+<script>
+/* Preserve CV state across Stripe redirect and return to finished CV */
+(function(){
+ const KEY='chyper_cv_checkout_state_v1';
+ const ids=['uiLang','name','role','email','phone','place','profile','skills','accentPosition','picker','hex'];
+ function saveState(){
+  const s={}; ids.forEach(id=>{const e=document.getElementById(id);if(e)s[id]=e.value;});
+  try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}
+ }
+ function restoreState(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');
+   if(s.uiLang){const l=document.getElementById('uiLang');if(l){l.value=s.uiLang;if(typeof setAll==='function')setAll();}}
+   ids.filter(id=>id!=='uiLang').forEach(id=>{const e=document.getElementById(id);if(e&&s[id]!=null)e.value=s[id];});
+   if(typeof render==='function')render();
+  }catch(e){}
+ }
+ const pay=document.getElementById('demoPay'); if(pay)pay.addEventListener('click',saveState,true);
+ const q=new URLSearchParams(location.search);
+ if(q.get('payment')==='success'&&q.get('session_id')){
+  restoreState();
+  if(typeof go==='function')go(3);
+  window.scrollTo({top:0,behavior:'instant'});
+  setTimeout(()=>{if(typeof go==='function')go(3);},50);
+ }
+})();
+</script>
