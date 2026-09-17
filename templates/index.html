@@ -867,3 +867,36 @@ if(typeof render==="function")render();closeAI();if(typeof go==="function")go(3)
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
 </script>
+
+<style>
+#aiReviewOverlay{position:fixed;inset:0;background:rgba(18,18,18,.5);backdrop-filter:blur(8px);z-index:10080;display:none;align-items:center;justify-content:center;padding:20px}#aiReviewOverlay.open{display:flex}
+#aiReviewCard{width:min(720px,100%);max-height:90vh;overflow:auto;background:#f7f3e9;border-radius:24px;padding:26px;box-shadow:0 28px 80px rgba(0,0,0,.25)}
+.reviewItem{background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:14px;padding:14px;margin:10px 0}.reviewReplacement{white-space:pre-wrap;background:#f5f5f5;border-radius:9px;padding:10px;margin-top:8px}
+.reviewBtns{display:flex;gap:8px;margin-top:10px}.reviewBtns button{width:auto}
+</style>
+<div id="aiReviewOverlay"><div id="aiReviewCard"><button class="closePay" id="aiReviewClose" type="button">×</button><h2>✨ AI CV-ellenőrzés</h2><p id="aiReviewStatus">Az AI átnézi a CV-det, de semmit nem módosít az engedélyed nélkül.</p><div id="aiReviewResults"></div></div></div>
+<script>
+(function(){
+ function val(id){const e=document.getElementById(id);return e?e.value:''}
+ function lang(){const l=document.getElementById('uiLang');return (l&&l.selectedOptions&&l.selectedOptions[0]?l.selectedOptions[0].textContent:l&&l.value)||'English'}
+ function cvData(){return {name:val('name'),role:val('role'),email:val('email'),phone:val('phone'),place:val('place'),profile:val('profile'),skills:val('skills'),languages:localStorage.getItem('chyper_languages_v1')||val('languages'),experience:localStorage.getItem('chyper_experience_ai')||localStorage.getItem('chyper_experience_v1')||'',education:localStorage.getItem('chyper_education_quick')||localStorage.getItem('chyper_education_v1')||''}}
+ function apply(s){
+   const f=s.field,r=s.replacement||''; if(!r)return;
+   const e=document.getElementById(f);if(e){e.value=r;e.dispatchEvent(new Event('input',{bubbles:true}))}
+   else if(f==='languages'){localStorage.setItem('chyper_languages_v1',r);const le=document.getElementById('languages');if(le){le.value=r;le.dispatchEvent(new Event('input',{bubbles:true}))}}
+   else if(f==='education'){localStorage.setItem('chyper_education_quick',r);const q=document.getElementById('educationQuickText');if(q){q.value=r;q.dispatchEvent(new Event('input',{bubbles:true}))}}
+   else if(f==='experience'){localStorage.setItem('chyper_experience_ai',r)}
+   if(typeof render==='function')render();
+ }
+ async function review(){
+   const o=document.getElementById('aiReviewOverlay'),st=document.getElementById('aiReviewStatus'),out=document.getElementById('aiReviewResults');o.classList.add('open');st.textContent='AI ellenőrzés folyamatban…';out.innerHTML='';
+   try{const r=await fetch('/api/ai-review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cv:cvData(),language:lang()})});const d=await r.json();if(!r.ok)throw new Error(d.error||'AI error');st.textContent=d.summary||'Ellenőrzés kész.';
+     if(!d.suggestions||!d.suggestions.length){out.innerHTML='<div class="reviewItem">✓ Nem találtam fontos javítanivalót.</div>';return}
+     d.suggestions.forEach((s,i)=>{const x=document.createElement('div');x.className='reviewItem';const issue=document.createElement('div');issue.textContent=s.issue||'';x.appendChild(issue);if(s.replacement){const rep=document.createElement('div');rep.className='reviewReplacement';rep.textContent=s.replacement;x.appendChild(rep)}
+       const b=document.createElement('div');b.className='reviewBtns';const yes=document.createElement('button');yes.className='primary';yes.textContent='Elfogadás';yes.onclick=()=>{apply(s);x.innerHTML='<b>✓ Elfogadva</b>'};const no=document.createElement('button');no.className='secondary';no.textContent='Elutasítás';no.onclick=()=>{x.innerHTML='<span>Elutasítva</span>'};b.append(yes,no);x.appendChild(b);out.appendChild(x)});
+   }catch(e){st.textContent='Az AI-ellenőrzés most nem sikerült. Próbáld újra.'}
+ }
+ const screen=document.getElementById('screen3');if(screen&&!document.getElementById('aiReviewBtn')){const b=document.createElement('button');b.id='aiReviewBtn';b.type='button';b.className='secondary';b.style.marginTop='10px';b.textContent='✨ CV ellenőrzése AI-val';b.onclick=review;const dl=document.getElementById('downloadBtn');if(dl&&dl.parentNode)dl.parentNode.insertBefore(b,dl);else screen.appendChild(b)}
+ document.getElementById('aiReviewClose').onclick=()=>document.getElementById('aiReviewOverlay').classList.remove('open');document.getElementById('aiReviewOverlay').onclick=e=>{if(e.target.id==='aiReviewOverlay')e.currentTarget.classList.remove('open')};
+})();
+</script>
