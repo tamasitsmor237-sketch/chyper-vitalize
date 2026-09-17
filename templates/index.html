@@ -816,3 +816,31 @@ if(typeof render==="function")render();closeAI();if(typeof go==="function")go(3)
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
 })();
 </script>
+
+<style>
+.cv .section h3[data-editable-section]{cursor:pointer;border-radius:6px}
+.cv .section h3[data-editable-section]:hover{background:rgba(0,0,0,.05)}
+#sectionEditModal{position:fixed;inset:0;background:rgba(18,18,18,.48);backdrop-filter:blur(7px);z-index:10060;display:none;align-items:center;justify-content:center;padding:20px}
+#sectionEditModal.open{display:flex}#sectionEditCard{width:min(620px,100%);background:#f7f3e9;border-radius:22px;padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.25)}
+#sectionEditText{width:100%;min-height:180px;margin-top:12px;padding:12px;border:1px solid rgba(0,0,0,.15);border-radius:12px;font:inherit;resize:vertical}
+</style>
+<div id="sectionEditModal"><div id="sectionEditCard"><h2 id="sectionEditTitle">Szerkesztés</h2><textarea id="sectionEditText"></textarea><div style="display:flex;gap:10px;margin-top:14px"><button class="secondary" id="sectionEditCancel" type="button">Mégse</button><button class="primary" id="sectionEditSave" type="button">Mentés</button></div></div></div>
+<script>
+(function(){
+ let type='';
+ const modal=document.getElementById('sectionEditModal'),box=document.getElementById('sectionEditText'),title=document.getElementById('sectionEditTitle');
+ function expText(){try{const a=JSON.parse(localStorage.getItem('chyper_experience_v1')||'[]');if(a.length)return a.map(x=>[x.role,x.company,x.location,[x.start,x.end].filter(Boolean).join(' – '),x.description].filter(Boolean).join(' | ')).join('\n')}catch(e){}return localStorage.getItem('chyper_experience_ai')||''}
+ function eduText(){return localStorage.getItem('chyper_education_quick')||''}
+ function open(t){type=t;title.textContent=t==='experience'?'Tapasztalat szerkesztése':'Tanulmányok szerkesztése';box.value=t==='experience'?expText():eduText();modal.classList.add('open');setTimeout(()=>box.focus(),20)}
+ function close(){modal.classList.remove('open')}
+ function setup(){const eh=document.getElementById('expHeading'),dh=document.getElementById('eduHeading');if(eh){eh.dataset.editableSection='1';eh.title='Kattints a szerkesztéshez';eh.onclick=()=>open('experience')}if(dh){dh.dataset.editableSection='1';dh.title='Kattints a szerkesztéshez';dh.onclick=()=>open('education')}}
+ document.getElementById('sectionEditCancel').onclick=close;
+ document.getElementById('sectionEditSave').onclick=function(){
+   const v=box.value.trim();
+   if(type==='education'){localStorage.setItem('chyper_education_quick',v);const q=document.getElementById('educationQuickText');if(q){q.value=v;q.dispatchEvent(new Event('input',{bubbles:true}))}}
+   else {localStorage.setItem('chyper_experience_ai',v);const h=document.getElementById('expHeading');const s=h&&h.closest('section');if(s){s.querySelectorAll('.job').forEach(x=>x.remove());if(v){const d=document.createElement('div');d.className='job';d.innerHTML='<p style="white-space:pre-line"></p>';d.querySelector('p').textContent=v;s.appendChild(d)}}}
+   if(typeof render==='function')render();close();
+ };
+ modal.onclick=e=>{if(e.target===modal)close()};setup();
+})();
+</script>
