@@ -948,3 +948,33 @@ try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Typ
  setTimeout(paintEducation,0);
 })();
 </script>
+
+<script>
+/* Universal live editor -> CV preview sync. */
+(function(){
+ function escLive(s){return String(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
+ function paintTextSection(headingId,outId,text,hideSelector){
+   const h=document.getElementById(headingId),s=h&&h.closest('section');if(!s)return;
+   let out=document.getElementById(outId);if(!out){out=document.createElement('div');out.id=outId;out.style.whiteSpace='pre-line';s.appendChild(out)}
+   if(hideSelector)s.querySelectorAll(hideSelector).forEach(x=>{if(x!==out)x.style.display=text?'none':''});
+   out.textContent=text||'';out.style.display=text?'block':'none';
+ }
+ function syncLive(){
+   const map={name:'pName',role:'pRole',profile:'pProfile'};
+   Object.keys(map).forEach(id=>{const e=document.getElementById(id),p=document.getElementById(map[id]);if(e&&p)p.textContent=id==='name'?e.value.toUpperCase():e.value});
+   const email=document.getElementById('email'),phone=document.getElementById('phone'),place=document.getElementById('place'),pc=document.getElementById('pContact');
+   if(pc)pc.innerHTML=[email&&email.value,phone&&phone.value,place&&place.value].filter(Boolean).map(escLive).join('<br>');
+   const sk=document.getElementById('skills'),ps=document.getElementById('pSkills');if(sk&&ps)ps.innerHTML=sk.value.split(/\n+/).filter(Boolean).map(x=>'<li>'+escLive(x)+'</li>').join('');
+   const la=document.getElementById('languages'),pl=document.getElementById('pLanguages');if(la&&pl){localStorage.setItem('chyper_languages_v1',la.value);pl.innerHTML=la.value.split(/\n|,/).map(x=>x.trim()).filter(Boolean).map(escLive).join('<br>')}
+   const eq=document.getElementById('educationQuickText');if(eq){localStorage.setItem('chyper_education_quick',eq.value);paintTextSection('eduHeading','pEducationAI',eq.value,'.edu,.education-item')}
+   const exAI=localStorage.getItem('chyper_experience_ai')||'';if(exAI)paintTextSection('expHeading','pExperienceAI',exAI,'.job');
+ }
+ document.addEventListener('input',function(e){
+   if(e.target&&e.target.closest&&e.target.closest('#screen3'))syncLive();
+ });
+ document.addEventListener('change',function(e){
+   if(e.target&&e.target.closest&&e.target.closest('#screen3'))syncLive();
+ });
+ window.syncEditorToCV=syncLive;setTimeout(syncLive,50);
+})();
+</script>
