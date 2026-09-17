@@ -5,6 +5,7 @@ from reportlab.lib.utils import ImageReader
 from io import BytesIO
 import base64, re, os
 import stripe
+from openai import OpenAI
 
 app = Flask(__name__)
 
@@ -84,3 +85,25 @@ def pdf():
         return send_file(buf, mimetype='application/pdf', as_attachment=True, download_name=f'Chyper_Vitalize_{name}.pdf')
     except Exception:
         return jsonify(error='pdf generation failed'), 500
+
+
+@app.post('/api/ai-interview')
+def ai_interview():
+    data = request.get_json(silent=True) or {}
+    answers = data.get('answers') or {}
+    language = str(data.get('language') or 'English')
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return jsonify(error='AI is not configured'), 500
+    try:
+        import json
+        client = OpenAI(api_key=api_key)
+        prompt = '''Create a professional CV draft only from the candidate answers. Return ONLY valid JSON with keys: name, role, email, phone, place, profile, skills. skills must be a short comma-separated string. Write role, profile and skills in the requested language. Never invent facts; use an empty string when missing. Requested language: %s\nCandidate answers: %s''' % (language, json.dumps(answers, ensure_ascii=False))
+        response = client.responses.create(model=os.environ.get('OPENAI_MODEL','gpt-5.6-luna'), input=prompt, store=False)
+        raw = response.output_text.strip()
+        raw = re.sub(r'^```(?:json)?\\s*|\\s*```$', '', raw, flags=re.I)
+        cv = json.loads(raw)
+        allowed = ['name','role','email','phone','place','profile','skills']
+        return jsonify({k: str(cv.get(k) or '') for k in allowed})
+    except Exception as e:
+        return jsonify(error='AI generation failed'), 500
