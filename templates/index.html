@@ -923,8 +923,28 @@ try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Typ
      if(es){es.querySelectorAll('.job').forEach(x=>x.remove());if(d.experience){const job=document.createElement('div');job.className='job';const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=d.experience;job.appendChild(p);es.appendChild(job)}}
    }
    if(typeof render==='function')render();
+   if(typeof window.paintEducation==='function')window.paintEducation();
    /* render() handles basic fields; restore custom sections afterwards because they are stored separately. */
    const lp=document.getElementById('pLanguages');if(lp&&d.languages!=null)lp.innerHTML=String(d.languages).split(/\n|,/).map(x=>x.trim()).filter(Boolean).map(escAI).join('<br>');
  }
+})();
+</script>
+
+<script>
+/* Keep AI/manual Education text rendered in the actual CV preview. */
+(function(){
+ function paintEducation(){
+   const text=localStorage.getItem('chyper_education_quick')||'';
+   const heading=document.getElementById('eduHeading'),section=heading&&heading.closest('section');if(!section)return;
+   let out=document.getElementById('pEducationAI');
+   if(!out){out=document.createElement('p');out.id='pEducationAI';out.style.whiteSpace='pre-line';section.appendChild(out)}
+   if(text){[...section.children].forEach(x=>{if(x!==heading&&!x.classList.contains('divider')&&x!==out)x.style.display='none'});out.textContent=text;out.style.display='block'}
+   else out.style.display='none';
+ }
+ const oldRender=window.render;
+ if(typeof oldRender==='function')window.render=function(){const r=oldRender.apply(this,arguments);paintEducation();return r};
+ window.paintEducation=paintEducation;
+ document.addEventListener('input',e=>{if(e.target&&e.target.id==='educationQuickText'){localStorage.setItem('chyper_education_quick',e.target.value);paintEducation()}});
+ setTimeout(paintEducation,0);
 })();
 </script>
