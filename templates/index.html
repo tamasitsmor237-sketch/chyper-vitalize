@@ -493,7 +493,7 @@ setAll();
   const q=new URLSearchParams(location.search); if(q.get('payment')!=='success'||!q.get('session_id'))return;
   try{const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(q.get('session_id')));const d=await r.json();if(!d.paid)return;
    window.paid=true; const s=document.getElementById('paySuccess');if(s){s.style.display='block';s.textContent='✓ Stripe tesztfizetés sikeres · PDF letöltés feloldva.';}
-   const p=document.getElementById('demoPay');if(p)p.style.display='none';const dl=document.getElementById('downloadBtn');if(dl)dl.style.display='none';const u=document.getElementById('unlockedBtn');if(u)u.style.display='block';if(typeof openPayment==='function')openPayment();
+   const p=document.getElementById('demoPay');if(p)p.style.display='none';const dl=document.getElementById('downloadBtn');if(dl)dl.style.display='none';const u=document.getElementById('unlockedBtn');if(u)u.style.display='block';/* success return: stay on CV editor */
   }catch(e){}
  }
  restore();
@@ -604,6 +604,21 @@ setAll();
  if(q.get('payment')==='success'&&q.get('session_id')){
   const closeSuccessModal=()=>{const w=document.getElementById('paywall');if(w)w.classList.remove('open');};
   closeSuccessModal(); setTimeout(closeSuccessModal,300); setTimeout(closeSuccessModal,800);
+ }
+})();
+</script>
+
+<script>
+/* Successful checkout: stay on CV and jump directly to PDF download */
+(function(){
+ const q=new URLSearchParams(location.search);
+ if(q.get('payment')==='success'&&q.get('session_id')){
+  document.documentElement.classList.add('stripe-return');
+  const style=document.createElement('style');style.textContent='.stripe-return #paywall{display:none!important}';document.head.appendChild(style);
+  setTimeout(()=>{
+   const w=document.getElementById('paywall');if(w)w.classList.remove('open');
+   const b=document.getElementById('unlockedBtn');if(b){b.style.display='block';b.scrollIntoView({behavior:'smooth',block:'center'});b.focus({preventScroll:true});}
+  },500);
  }
 })();
 </script>
