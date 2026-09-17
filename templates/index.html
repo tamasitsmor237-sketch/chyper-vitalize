@@ -526,3 +526,37 @@ setAll();
  }
 })();
 </script>
+
+<script>
+/* Save all editable CV form values before leaving for Stripe */
+(function(){
+ const KEY='chyper_cv_full_state_v2';
+ function saveFull(){
+  const s={fields:{}};
+  document.querySelectorAll('#screen3 input,#screen3 textarea,#screen3 select').forEach((e,i)=>{
+   if(e.type==='file')return;
+   const k=e.id||e.name||('field_'+i);
+   s.fields[k]={value:e.value,checked:e.checked,type:e.type};
+  });
+  s.lang=document.getElementById('uiLang')?.value||'';
+  s.accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+  try{localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}
+ }
+ function restoreFull(){
+  try{
+   const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(!s)return;
+   if(s.lang){const l=document.getElementById('uiLang');if(l){l.value=s.lang;if(typeof setAll==='function')setAll();}}
+   Object.entries(s.fields||{}).forEach(([k,v])=>{const e=document.getElementById(k)||document.querySelector('[name="'+CSS.escape(k)+'"]');if(!e)return;if(v.type==='checkbox'||v.type==='radio')e.checked=!!v.checked;else e.value=v.value;});
+   if(s.accent)document.documentElement.style.setProperty('--accent',s.accent);
+   if(typeof render==='function')render();
+  }catch(e){}
+ }
+ document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#screen3'))saveFull();});
+ document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('#screen3'))saveFull();});
+ const b=document.getElementById('demoPay');if(b)b.addEventListener('click',saveFull,true);
+ const q=new URLSearchParams(location.search);
+ if(q.get('payment')==='success'&&q.get('session_id')){
+  restoreFull(); if(typeof go==='function')go(3); setTimeout(()=>{restoreFull();if(typeof go==='function')go(3);},150);
+ }
+})();
+</script>
