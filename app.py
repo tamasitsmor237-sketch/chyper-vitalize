@@ -107,3 +107,29 @@ def ai_interview():
         return jsonify({k: str(cv.get(k) or '') for k in allowed})
     except Exception as e:
         return jsonify(error='AI generation failed'), 500
+
+
+@app.post('/api/ai-review')
+def ai_review():
+    data = request.get_json(silent=True) or {}
+    cv = data.get('cv') or {}
+    language = str(data.get('language') or 'English')
+    api_key = os.environ.get('OPENAI_API_KEY')
+    if not api_key:
+        return jsonify(error='AI is not configured'), 500
+    try:
+        import json
+        client = OpenAI(api_key=api_key)
+        prompt = '''Review this CV using only the supplied facts. Do not invent qualifications, experience, dates, skills, languages or achievements. Check spelling/grammar, clarity, professionalism, repetition, missing important information, and obvious date/consistency problems. Return ONLY valid JSON: {"summary":"short assessment","suggestions":[{"field":"profile|skills|experience|education|languages|general","issue":"what should improve","replacement":"suggested replacement text or empty string"}]}. Write all user-facing text in the requested language. Keep at most 6 useful suggestions. Requested language: %s\nCV: %s''' % (language, json.dumps(cv, ensure_ascii=False))
+        response = client.responses.create(model=os.environ.get('OPENAI_MODEL','gpt-5.6-luna'), input=prompt, store=False)
+        raw = response.output_text.strip()
+        raw = re.sub(r'^\x60\x60\x60(?:json)?\\s*|\\s*\x60\x60\x60$', '', raw, flags=re.I)
+        result = json.loads(raw)
+        suggestions = result.get('suggestions') if isinstance(result.get('suggestions'), list) else []
+        clean = []
+        for s in suggestions[:6]:
+            if isinstance(s, dict):
+                clean.append({'field': str(s.get('field') or 'general'), 'issue': str(s.get('issue') or ''), 'replacement': str(s.get('replacement') or '')})
+        return jsonify(summary=str(result.get('summary') or ''), suggestions=clean)
+    except Exception:
+        return jsonify(error='AI review failed'), 500
