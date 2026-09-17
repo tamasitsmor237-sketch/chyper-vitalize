@@ -713,3 +713,43 @@ const l=document.getElementById("uiLang");const language=(l&&l.selectedOptions&&
 try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:answers,language:language})});const d=await r.json();if(!r.ok)throw new Error(d.error||"AI error");["name","role","email","phone","place","profile","skills"].forEach(function(id){const e=document.getElementById(id);if(e&&d[id]!=null)e.value=d[id]});if(typeof render==="function")render();closeAI();if(typeof go==="function")go(3);window.scrollTo(0,0)}catch(e){status.textContent="Az AI-kérés nem sikerült. Próbáld újra."}finally{btn.disabled=false}};
 })();
 </script>
+
+<style>
+#educationEditor{margin-top:18px;padding:18px;border:1px solid rgba(0,0,0,.12);border-radius:16px;background:rgba(255,255,255,.55)}
+.eduGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.eduGrid .full{grid-column:1/-1}
+.eduGrid input,.eduGrid textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid rgba(0,0,0,.14);border-radius:10px;font:inherit;background:#fff}
+#addEducationBtn{margin-top:10px;padding:11px 14px;border:0;border-radius:10px;background:#111;color:#fff;cursor:pointer}
+.eduItem{padding:10px 0;border-bottom:1px solid rgba(0,0,0,.1)}.eduItem button{float:right;border:0;background:transparent;cursor:pointer}
+@media(max-width:650px){.eduGrid{grid-template-columns:1fr}.eduGrid .full{grid-column:auto}}
+</style>
+<script>
+(function(){
+ function installEducation(){
+  if(document.getElementById('educationEditor'))return;
+  const screen=document.getElementById('screen3'); if(!screen)return;
+  const host=document.createElement('div');host.id='educationEditor';
+  host.innerHTML='<h3>Tanulmányok</h3><div class="eduGrid"><input id="eduSchool" placeholder="Iskola / intézmény neve"><input id="eduDegree" placeholder="Szak / képzés"><input id="eduLocation" placeholder="Helyszín"><input id="eduStart" placeholder="Kezdés (év / hónap)"><input id="eduEnd" placeholder="Befejezés (év / hónap vagy jelenleg)"><textarea class="full" id="eduDescription" rows="3" placeholder="Leírás (opcionális)"></textarea></div><button id="addEducationBtn" type="button">+ Tanulmány hozzáadása</button><div id="educationList"></div>';
+  const anchor=document.getElementById('skills')?.closest('div'); if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(host,anchor.nextSibling);else screen.appendChild(host);
+  let items=[];try{items=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){}
+  function draw(){
+   const list=document.getElementById('educationList');list.innerHTML='';
+   items.forEach((x,i)=>{const d=document.createElement('div');d.className='eduItem';d.innerHTML='<button type="button" data-i="'+i+'">✕</button><b>'+esc(x.school)+'</b>'+(x.degree?' — '+esc(x.degree):'')+'<br><small>'+esc([x.location,x.start&&x.end?x.start+' – '+x.end:x.start||x.end].filter(Boolean).join(' · '))+'</small>'+(x.description?'<div>'+esc(x.description)+'</div>':'');list.appendChild(d)});
+   list.querySelectorAll('button').forEach(b=>b.onclick=()=>{items.splice(+b.dataset.i,1);save()});
+   syncCV();
+  }
+  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function save(){localStorage.setItem('chyper_education_v1',JSON.stringify(items));draw()}
+  function syncCV(){
+   const text=items.map(x=>[x.school,x.degree,x.location,[x.start,x.end].filter(Boolean).join(' – '),x.description].filter(Boolean).join(' | ')).join('\n');
+   const candidates=['education','edu','studies'];for(const id of candidates){const e=document.getElementById(id);if(e){e.value=text;e.dispatchEvent(new Event('input',{bubbles:true}));break}}
+   if(typeof render==='function')render();
+  }
+  document.getElementById('addEducationBtn').onclick=()=>{
+   const x={school:eduSchool.value.trim(),degree:eduDegree.value.trim(),location:eduLocation.value.trim(),start:eduStart.value.trim(),end:eduEnd.value.trim(),description:eduDescription.value.trim()};
+   if(!x.school&&!x.degree)return;items.push(x);['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].forEach(id=>document.getElementById(id).value='');save();
+  };
+  draw();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installEducation);else installEducation();
+})();
+</script>
