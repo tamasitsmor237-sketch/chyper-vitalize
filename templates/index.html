@@ -622,3 +622,24 @@ setAll();
  }
 })();
 </script>
+
+<script>
+/* v4: after verified Stripe payment, show only the final PDF action prominently */
+(function(){
+ const q=new URLSearchParams(location.search), sid=q.get('session_id');
+ if(q.get('payment')!=='success'||!sid)return;
+ const css=document.createElement('style');css.textContent='.stripe-paid-return #paywall{display:none!important}.stripe-paid-return #unlockedBtn{display:block!important;position:fixed!important;left:50%!important;bottom:28px!important;transform:translateX(-50%)!important;width:min(420px,calc(100vw - 32px))!important;z-index:9999!important;padding:16px 20px!important;font-size:18px!important;box-shadow:0 12px 40px rgba(0,0,0,.22)!important}';document.head.appendChild(css);
+ async function finish(){
+  try{const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(sid));const d=await r.json();if(!r.ok||!d.paid)return;
+   document.documentElement.classList.add('stripe-paid-return');
+   const w=document.getElementById('paywall');if(w)w.classList.remove('open');
+   if(typeof go==='function')go(3);
+   const b=document.getElementById('unlockedBtn');if(b){b.style.display='block';b.textContent='PDF letöltése';b.focus({preventScroll:true});}
+   const normal=document.getElementById('downloadBtn');if(normal)normal.style.display='none';
+   window.scrollTo({top:document.body.scrollHeight,behavior:'instant'});
+   history.replaceState({},'',location.pathname);
+  }catch(e){}
+ }
+ finish();
+})();
+</script>
