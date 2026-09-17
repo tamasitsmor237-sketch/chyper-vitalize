@@ -474,3 +474,28 @@ setAll();
   };
 })();
 </script>
+<script>
+/* Stripe Checkout test integration v2 */
+(function(){
+ async function startStripeCheckout(){
+  const btn=document.getElementById('demoPay'), old=btn?btn.innerHTML:'';
+  if(btn){btn.disabled=true;btn.textContent='Stripe Checkout…';}
+  try{
+   const discount=document.getElementById('discountMsg');
+   const referral=!!(discount && getComputedStyle(discount).display!=='none');
+   const r=await fetch('/api/create-checkout-session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({referral})});
+   const d=await r.json(); if(!r.ok||!d.url) throw new Error(); location.href=d.url;
+  }catch(e){if(btn){btn.disabled=false;btn.innerHTML=old;} alert('A Stripe Checkout most nem indítható. Kérlek próbáld újra.');}
+ }
+ window.completePayment=startStripeCheckout;
+ const b=document.getElementById('demoPay'); if(b)b.onclick=startStripeCheckout;
+ async function restore(){
+  const q=new URLSearchParams(location.search); if(q.get('payment')!=='success'||!q.get('session_id'))return;
+  try{const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(q.get('session_id')));const d=await r.json();if(!d.paid)return;
+   window.paid=true; const s=document.getElementById('paySuccess');if(s){s.style.display='block';s.textContent='✓ Stripe tesztfizetés sikeres · PDF letöltés feloldva.';}
+   const p=document.getElementById('demoPay');if(p)p.style.display='none';const dl=document.getElementById('downloadBtn');if(dl)dl.style.display='none';const u=document.getElementById('unlockedBtn');if(u)u.style.display='block';if(typeof openPayment==='function')openPayment();
+  }catch(e){}
+ }
+ restore();
+})();
+</script>
