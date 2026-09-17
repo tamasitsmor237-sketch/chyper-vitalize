@@ -933,7 +933,7 @@ document.getElementById('addEducationBtn').onclick=()=>{
      if(es){es.querySelectorAll('.job').forEach(x=>x.remove());if(d.experience){const job=document.createElement('div');job.className='job';const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=d.experience;job.appendChild(p);es.appendChild(job)}}
    }
    if(typeof render==='function')render();
-   if(typeof window.paintEducation==='function')window.paintEducation();
+   if(typeof window.paintEducation==='function')window.paintEducation();if(typeof window.updateEducationPreview==='function')window.updateEducationPreview();
    /* render() handles basic fields; restore custom sections afterwards because they are stored separately. */
    const lp=document.getElementById('pLanguages');if(lp&&d.languages!=null)lp.innerHTML=String(d.languages).split(/\n|,/).map(x=>x.trim()).filter(Boolean).map(escAI).join('<br>');
  }
@@ -986,5 +986,36 @@ document.getElementById('addEducationBtn').onclick=()=>{
    if(e.target&&e.target.closest&&e.target.closest('#screen3'))syncLive();
  });
  window.syncEditorToCV=syncLive;setTimeout(syncLive,50);
+})();
+</script>
+
+<script>
+/* Definitive Education live-preview binding: update the visible Tanulmányok block itself. */
+(function(){
+ function visibleEducationBody(){
+   const h=document.getElementById('eduHeading');if(!h)return null;
+   const s=h.closest('section');if(!s)return null;
+   let b=document.getElementById('educationLiveBody');
+   if(!b){b=document.createElement('div');b.id='educationLiveBody';b.style.whiteSpace='pre-line';h.insertAdjacentElement('afterend',b)}
+   [...s.children].forEach(x=>{if(x!==h&&x!==b&&!x.classList.contains('divider'))x.style.display='none'});
+   return b;
+ }
+ function structuredText(){
+   const ids=['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'];
+   const v=Object.fromEntries(ids.map(id=>[id,(document.getElementById(id)?.value||'').trim()]));
+   return [v.eduSchool,v.eduDegree,v.eduLocation,[v.eduStart,v.eduEnd].filter(Boolean).join(' – '),v.eduDescription].filter(Boolean).join(' | ');
+ }
+ function updateEducationPreview(){
+   const b=visibleEducationBody();if(!b)return;
+   const draft=structuredText();
+   const quick=(document.getElementById('educationQuickText')?.value||localStorage.getItem('chyper_education_quick')||'').trim();
+   let saved='';
+   try{const a=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]');saved=a.map(x=>[x.school,x.degree,x.location,[x.start,x.end].filter(Boolean).join(' – '),x.description].filter(Boolean).join(' | ')).join('\n')}catch(e){}
+   b.textContent=draft||quick||saved||'';
+ }
+ document.addEventListener('input',e=>{if(e.target&&['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription','educationQuickText'].includes(e.target.id)){if(e.target.id==='educationQuickText')localStorage.setItem('chyper_education_quick',e.target.value);updateEducationPreview()}});
+ document.addEventListener('change',e=>{if(e.target&&['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription','educationQuickText'].includes(e.target.id))updateEducationPreview()});
+ window.updateEducationPreview=updateEducationPreview;
+ setTimeout(updateEducationPreview,100);
 })();
 </script>
