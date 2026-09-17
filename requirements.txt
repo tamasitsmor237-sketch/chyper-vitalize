@@ -2,3 +2,4 @@ Flask>=3.0,<4
 reportlab>=4.0,<5
 gunicorn>=22,<24
 stripe>=11,<13
+openai>=1.0,<3
