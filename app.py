@@ -3,7 +3,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 from io import BytesIO
-import base64, re
+import base64, re, os
+import stripe
 
 app = Flask(__name__)
 
@@ -14,6 +15,51 @@ def index():
 @app.get('/health')
 def health():
     return jsonify(status='ok')
+
+@app.post('/api/create-checkout-session')
+def create_checkout_session():
+    data = request.get_json(silent=True) or {}
+    referral = bool(data.get('referral'))
+    amount = 199 if referral else 399
+
+    secret_key = os.environ.get('STRIPE_SECRET_KEY')
+    if not secret_key:
+        return jsonify(error='Stripe is not configured'), 500
+
+    stripe.api_key = secret_key
+    base_url = request.host_url.rstrip('/')
+
+    try:
+        session = stripe.checkout.Session.create(
+            mode='payment',
+            line_items=[{
+                'price_data': {
+                    'currency': 'eur',
+                    'product_data': {'name': 'Chyper Vitalize CV'},
+                    'unit_amount': amount,
+                },
+                'quantity': 1,
+            }],
+            success_url=base_url + '/?payment=success&session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=base_url + '/?payment=cancelled',
+            metadata={'referral': 'true' if referral else 'false'},
+        )
+        return jsonify(url=session.url)
+    except Exception:
+        return jsonify(error='checkout creation failed'), 500
+
+@app.get('/api/payment-status')
+def payment_status():
+    session_id = request.args.get('session_id', '')
+    secret_key = os.environ.get('STRIPE_SECRET_KEY')
+    if not secret_key or not session_id:
+        return jsonify(paid=False), 400
+    stripe.api_key = secret_key
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+        return jsonify(paid=(session.payment_status == 'paid'))
+    except Exception:
+        return jsonify(paid=False), 400
 
 @app.post('/api/pdf')
 def pdf():
