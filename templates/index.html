@@ -596,3 +596,14 @@ setAll();
  setTimeout(paidReturn,250);
 })();
 </script>
+
+<script>
+/* Do not reopen checkout modal after successful Stripe return */
+(function(){
+ const q=new URLSearchParams(location.search);
+ if(q.get('payment')==='success'&&q.get('session_id')){
+  const closeSuccessModal=()=>{const w=document.getElementById('paywall');if(w)w.classList.remove('open');};
+  closeSuccessModal(); setTimeout(closeSuccessModal,300); setTimeout(closeSuccessModal,800);
+ }
+})();
+</script>
