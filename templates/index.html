@@ -1019,3 +1019,30 @@ document.getElementById('addEducationBtn').onclick=()=>{
  setTimeout(updateEducationPreview,100);
 })();
 </script>
+
+<script>
+(function(){
+ const ids=['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'];
+ function get(id){return (document.getElementById(id)?.value||'').trim()}
+ function syncStructuredEducation(){
+   const h=document.getElementById('eduHeading');if(!h)return;
+   const s=h.closest('section');if(!s)return;
+   let box=document.getElementById('structuredEducationPreview');
+   if(!box){box=document.createElement('div');box.id='structuredEducationPreview';h.insertAdjacentElement('afterend',box)}
+   const school=get('eduSchool'),degree=get('eduDegree'),location=get('eduLocation'),start=get('eduStart'),end=get('eduEnd'),desc=get('eduDescription');
+   const has=[school,degree,location,start,end,desc].some(Boolean);
+   if(!has){box.innerHTML='';box.style.display='none';return}
+   [...s.children].forEach(el=>{if(el!==h&&el!==box&&!el.classList.contains('divider'))el.style.display='none'});
+   box.style.display='block';box.innerHTML='';
+   if(school||degree){const title=document.createElement('div');title.style.fontWeight='700';title.textContent=[degree,school].filter(Boolean).join(' — ');box.appendChild(title)}
+   if(location||start||end){const meta=document.createElement('div');meta.style.fontSize='.9em';meta.style.marginTop='3px';meta.textContent=[location,[start,end].filter(Boolean).join(' – ')].filter(Boolean).join(' · ');box.appendChild(meta)}
+   if(desc){const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=desc;box.appendChild(p)}
+ }
+ function bind(){
+   ids.forEach(id=>{const e=document.getElementById(id);if(e&&!e.dataset.eduLiveBound){e.dataset.eduLiveBound='1';e.addEventListener('input',syncStructuredEducation);e.addEventListener('keyup',syncStructuredEducation);e.addEventListener('change',syncStructuredEducation)}});
+   syncStructuredEducation();
+ }
+ document.addEventListener('DOMContentLoaded',bind);setTimeout(bind,250);setTimeout(bind,1200);
+ window.syncStructuredEducation=syncStructuredEducation;
+})();
+</script>
