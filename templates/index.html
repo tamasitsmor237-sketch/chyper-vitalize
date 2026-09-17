@@ -643,3 +643,47 @@ setAll();
  finish();
 })();
 </script>
+
+<style>
+#buildModeOverlay{position:fixed;inset:0;background:rgba(18,18,18,.42);backdrop-filter:blur(8px);z-index:10020;display:none;align-items:center;justify-content:center;padding:22px}
+#buildModeOverlay.open{display:flex}
+#buildModeCard{width:min(720px,100%);background:#f7f3e9;border:1px solid rgba(0,0,0,.12);border-radius:24px;padding:28px;box-shadow:0 28px 80px rgba(0,0,0,.24)}
+#buildModeCard h2{margin:0 0 8px;font-size:28px}#buildModeCard p{margin:0 0 22px;opacity:.7}
+.buildModeGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.buildModeBtn{border:1px solid rgba(0,0,0,.14);background:#fff;border-radius:18px;padding:22px;text-align:left;cursor:pointer;font:inherit}
+.buildModeBtn:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.buildModeBtn b{display:block;font-size:18px;margin-bottom:6px}.buildModeBtn span{opacity:.68;font-size:14px}
+@media(max-width:620px){.buildModeGrid{grid-template-columns:1fr}}
+</style>
+<div id="buildModeOverlay">
+ <div id="buildModeCard">
+  <h2 id="buildModeTitle">Hogyan szeretnéd elkészíteni a CV-det?</h2>
+  <p id="buildModeSub">Bármelyiket választod, később mindent szabadon szerkeszthetsz.</p>
+  <div class="buildModeGrid">
+   <button class="buildModeBtn" id="manualModeBtn" type="button"><b>✍️ Kitöltöm én</b><span>Nyisd meg a szerkesztőt, és tölts ki mindent saját magad.</span></button>
+   <button class="buildModeBtn" id="aiModeBtn" type="button"><b>✨ AI-interjúval készítem</b><span>Az AI kérdez, majd a válaszaidból összeállítja a CV első változatát.</span></button>
+  </div>
+ </div>
+</div>
+<script>
+(function(){
+ let modeAsked=false;
+ const overlay=document.getElementById('buildModeOverlay');
+ function showMode(){if(overlay){modeAsked=true;overlay.classList.add('open');window.scrollTo(0,0)}}
+ function hideMode(){if(overlay)overlay.classList.remove('open')}
+ document.getElementById('manualModeBtn').onclick=function(){hideMode();if(typeof go==='function')go(3)};
+ document.getElementById('aiModeBtn').onclick=function(){
+   hideMode();
+   const candidates=['aiInterviewBtn','startAiBtn','aiBtn','interviewBtn'];
+   for(const id of candidates){const b=document.getElementById(id);if(b){b.click();return}}
+   if(typeof go==='function')go(3);
+   setTimeout(()=>{const els=[...document.querySelectorAll('button')];const b=els.find(x=>/AI.?interj|AI.?interview/i.test(x.textContent||''));if(b)b.click()},100);
+ };
+ const oldStart=window.startInChosenLanguage;
+ if(typeof oldStart==='function'){
+   window.startInChosenLanguage=function(){showMode()};
+ }
+ const cont=document.getElementById('continueBtn');
+ if(cont)cont.onclick=function(e){e.preventDefault();showMode()};
+})();
+</script>
