@@ -697,7 +697,8 @@ setAll();
 <label class="aiQ">Email címed?</label><input class="aiA" id="aiEmail">
 <label class="aiQ">Telefonszámod?</label><input class="aiA" id="aiPhone">
 <label class="aiQ">Hol élsz? (város, ország)</label><input class="aiA" id="aiPlace">
-<label class="aiQ">Írd le röviden a munkatapasztalatodat és tanulmányaidat.</label><textarea class="aiA" id="aiExperience" rows="4"></textarea>
+<label class="aiQ">Tapasztalatok</label><textarea class="aiA" id="aiExperience" rows="4" placeholder="Munkakör, cég, helyszín, időszak, főbb feladatok"></textarea>
+<label class="aiQ">Tanulmányok</label><textarea class="aiA" id="aiEducation" rows="4" placeholder="Iskola / intézmény, szak vagy képzés, helyszín, időszak"></textarea>
 <label class="aiQ">Mik a legerősebb készségeid?</label><textarea class="aiA" id="aiSkills" rows="3"></textarea>
 <div id="aiInterviewStatus" style="margin-top:12px"></div><div class="aiActions"><button class="aiSecondary" id="aiCancel" type="button">Vissza</button><button class="aiPrimary" id="aiGenerate" type="button">CV elkészítése AI-val</button></div></div></div>
 <script>
@@ -708,9 +709,11 @@ document.getElementById("aiCancel").onclick=closeAI;
 document.getElementById("aiModeBtn").onclick=function(){document.getElementById("buildModeOverlay").classList.remove("open");openAI()};
 document.getElementById("aiGenerate").onclick=async function(){
 const btn=this,status=document.getElementById("aiInterviewStatus");btn.disabled=true;status.textContent="AI dolgozik…";
-const answers={name:document.getElementById("aiName").value,role:document.getElementById("aiRole").value,email:document.getElementById("aiEmail").value,phone:document.getElementById("aiPhone").value,place:document.getElementById("aiPlace").value,experience:document.getElementById("aiExperience").value,skills:document.getElementById("aiSkills").value};
+const answers={name:document.getElementById("aiName").value,role:document.getElementById("aiRole").value,email:document.getElementById("aiEmail").value,phone:document.getElementById("aiPhone").value,place:document.getElementById("aiPlace").value,experience:document.getElementById("aiExperience").value,education:document.getElementById("aiEducation").value,skills:document.getElementById("aiSkills").value};
 const l=document.getElementById("uiLang");const language=(l&&l.selectedOptions&&l.selectedOptions[0]?l.selectedOptions[0].textContent:l&&l.value)||"English";
-try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:answers,language:language})});const d=await r.json();if(!r.ok)throw new Error(d.error||"AI error");["name","role","email","phone","place","profile","skills"].forEach(function(id){const e=document.getElementById(id);if(e&&d[id]!=null)e.value=d[id]});if(typeof render==="function")render();closeAI();if(typeof go==="function")go(3);window.scrollTo(0,0)}catch(e){status.textContent="Az AI-kérés nem sikerült. Próbáld újra."}finally{btn.disabled=false}};
+try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:answers,language:language})});const d=await r.json();if(!r.ok)throw new Error(d.error||"AI error");["name","role","email","phone","place","profile","skills"].forEach(function(id){const e=document.getElementById(id);if(e&&d[id]!=null)e.value=d[id]});if(d.experience) localStorage.setItem("chyper_experience_ai",d.experience);
+if(d.education){localStorage.setItem("chyper_education_quick",d.education);const eq=document.getElementById("educationQuickText");if(eq){eq.value=d.education;eq.dispatchEvent(new Event("input",{bubbles:true}))}}
+if(typeof render==="function")render();closeAI();if(typeof go==="function")go(3);window.scrollTo(0,0)}catch(e){status.textContent="Az AI-kérés nem sikerült. Próbáld újra."}finally{btn.disabled=false}};
 })();
 </script>
 
