@@ -44,19 +44,19 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
    </section>
    <section class="screen" id="screen3">
     <h2 id="editorTitle">CV szerkesztő</h2><div class="sub" id="editorSub">A módosítások azonnal megjelennek az élő A4-es előnézeten.</div>
-    <div class="group"><label class="label">Alapadatok</label><input class="input" id="name" value="Alex Morgan" placeholder="Teljes név"><input class="input" style="margin-top:8px" id="role" value="Marketing Specialist" placeholder="Szakmai cím"><div class="row" style="margin-top:8px"><input class="input" id="email" value="alex.morgan@email.com" placeholder="E-mail"><input class="input" id="phone" value="+36 30 123 4567" placeholder="Telefon"></div><input class="input" style="margin-top:8px" id="place" value="Budapest, Hungary" placeholder="Város, ország"></div>
+    <div class="group"><label class="label">Alapadatok</label><input class="input" id="name" value="Alex Morgan" placeholder="Teljes név"><input class="input" style="margin-top:8px" id="role" value="" placeholder="Szakmai cím"><div class="row" style="margin-top:8px"><input class="input" id="email" value="alex.morgan@email.com" placeholder="E-mail"><input class="input" id="phone" value="+36 30 123 4567" placeholder="Telefon"></div><input class="input" style="margin-top:8px" id="place" value="Budapest, Hungary" placeholder="Város, ország"></div>
     <div class="group"><label class="label">Profilkép (opcionális)</label><input class="input" type="file" id="photoInput" accept="image/*"><div class="hint">Ha nincs kép, a CV automatikusan alkalmazkodik.</div></div>
     <div class="group"><label class="label">Díszléc helye</label><select class="select" id="accentPosition"><option value="top">Felül</option><option value="left">Bal oldalt</option><option value="right">Jobb oldalt</option><option value="top-left">Felül + bal oldalt</option><option value="top-right">Felül + jobb oldalt</option><option value="sections">Szekciók között</option><option value="none">Nincs díszléc</option></select><div class="hint">Válaszd ki, hol jelenjen meg a színes díszléc. A változás azonnal látszik az előnézeten.</div></div>
     <div class="group"><label class="label">Díszléc színe</label><div class="swatches" id="swatches"></div><div class="colorLine"><input type="color" class="colorPicker" id="picker" value="#2f6f8f"><input class="input" id="hex" value="#2F6F8F" maxlength="7"></div><div class="hint">Csak a díszítőelemek kapják ezt a színt. A háttér ivory, a szöveg sötét marad.</div></div>
-    <div class="group"><label class="label">Szakmai profil</label><textarea class="textarea" id="profile">Results-oriented marketing specialist with experience in digital campaigns, content creation and client communication.</textarea></div>
-    <div class="group"><label class="label">Készségek</label><textarea class="textarea" id="skills">Digital Marketing\nContent Creation\nSocial Media\nAnalytics\nClient Communication</textarea></div>
+    <div class="group"><label class="label">Szakmai profil</label><textarea class="textarea" id="profile"></textarea></div>
+    <div class="group"><label class="label">Készségek</label><textarea class="textarea" id="skills"></textarea></div>
     <button class="secondary" style="margin-top:0;margin-bottom:8px" onclick="openAIInterview()"><span id="aiStartText">✦ AI-interjú indítása</span></button><button class="primary" id="downloadBtn" onclick="openPayment()"><span id="downloadPayText">CV letöltése · Fizetés</span></button><button class="primary downloadUnlocked" id="unlockedBtn" onclick="downloadPDF()"><span id="pdfText">PDF letöltése</span></button><button class="secondary" onclick="go(2)"><span id="changeCvLangText">← CV nyelvének módosítása</span></button><div class="hint" style="margin-top:10px">A CV szerkesztése és előnézete ingyenes. Fizetni csak a végleges <span id="pdfText">PDF letöltése</span>kor kell.</div>
    </section>
   </aside>
   <main class="previewWrap">
    <article class="cv" id="cv">
     <div id="bars"><div class="bar top"></div></div>
-    <header class="cvHeader"><div><div class="cvName" id="pName">ALEX MORGAN</div><div class="cvTitle" id="pRole">Marketing Specialist</div></div><div><div class="photo" id="photo">PROFILE<br>PHOTO</div><div class="contact" id="pContact">alex.morgan@email.com<br>+36 30 123 4567<br>Budapest, Hungary</div></div></header>
+    <header class="cvHeader"><div><div class="cvName" id="pName">ALEX MORGAN</div><div class="cvTitle" id="pRole"></div></div><div><div class="photo" id="photo">PROFILE<br>PHOTO</div><div class="contact" id="pContact">alex.morgan@email.com<br>+36 30 123 4567<br>Budapest, Hungary</div></div></header>
     <div class="grid">
       <div>
        <section class="section drag"><h3 id="skillsHeading">Skills</h3><div class="divider"></div><ul id="pSkills"></ul></section>
@@ -65,7 +65,7 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
       </div>
       <div>
        <section class="section drag"><h3 id="profileHeading">Profile</h3><div class="divider"></div><p id="pProfile"></p></section>
-       <section class="section drag"><h3 id="expHeading">Experience</h3><div class="divider"></div><div class="job"><div class="jobTop"><span class="jobTitle">Digital Marketing Specialist</span><span class="jobDate">2023–Present</span></div><div class="company">Company Name · Budapest</div><p>Planned and managed digital campaigns, created content and monitored campaign performance. Coordinated projects with clients and internal teams.</p></div><div class="job"><div class="jobTop"><span class="jobTitle">Marketing Assistant</span><span class="jobDate">2021–2023</span></div><div class="company">Company Name · Budapest</div><p>Supported campaign preparation, social media content and day-to-day client communication.</p></div></section>
+       <section class="section drag"><h3 id="expHeading">Experience</h3><div class="divider"></div></section>
       </div>
     </div><div class="footerNote">Chyper Vitalize · Live prototype</div>
    </article>
