@@ -98,12 +98,12 @@ def ai_interview():
     try:
         import json
         client = OpenAI(api_key=api_key)
-        prompt = '''Create a professional CV draft only from the candidate answers. Return ONLY valid JSON with keys: name, role, email, phone, place, profile, skills, experience, education. skills must be a short comma-separated string. experience and education must each be concise CV-ready text based only on the corresponding candidate answers. Write role, profile and skills in the requested language. Never invent facts; use an empty string when missing. Requested language: %s\nCandidate answers: %s''' % (language, json.dumps(answers, ensure_ascii=False))
+        prompt = '''Create a professional CV draft only from the candidate answers. Return ONLY valid JSON with keys: name, role, email, phone, place, profile, skills, experience, education, languages. skills must be a short comma-separated string. experience and education must each be concise CV-ready text based only on the corresponding candidate answers. languages must contain only the candidate language knowledge and proficiency levels, without inventing any. Write role, profile and skills in the requested language. Never invent facts; use an empty string when missing. Requested language: %s\nCandidate answers: %s''' % (language, json.dumps(answers, ensure_ascii=False))
         response = client.responses.create(model=os.environ.get('OPENAI_MODEL','gpt-5.6-luna'), input=prompt, store=False)
         raw = response.output_text.strip()
         raw = re.sub(r'^```(?:json)?\\s*|\\s*```$', '', raw, flags=re.I)
         cv = json.loads(raw)
-        allowed = ['name','role','email','phone','place','profile','skills','experience','education']
+        allowed = ['name','role','email','phone','place','profile','skills','experience','education','languages']
         return jsonify({k: str(cv.get(k) or '') for k in allowed})
     except Exception as e:
         return jsonify(error='AI generation failed'), 500
