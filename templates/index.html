@@ -780,3 +780,36 @@ try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Typ
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
 })();
 </script>
+
+<style>
+#experienceEditor{margin-top:18px;padding:18px;border:1px solid rgba(0,0,0,.12);border-radius:16px;background:rgba(255,255,255,.55)}
+.expGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.expGrid .full{grid-column:1/-1}
+.expGrid input,.expGrid textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid rgba(0,0,0,.14);border-radius:10px;font:inherit;background:#fff}
+#addExperienceBtn{margin-top:10px;padding:11px 14px;border:0;border-radius:10px;background:#111;color:#fff;cursor:pointer}
+.expItem{padding:10px 0;border-bottom:1px solid rgba(0,0,0,.1)}.expItem button{float:right;border:0;background:transparent;cursor:pointer}
+@media(max-width:650px){.expGrid{grid-template-columns:1fr}.expGrid .full{grid-column:auto}}
+</style>
+<script>
+(function(){
+ function install(){
+  if(document.getElementById('experienceEditor'))return;
+  const screen=document.getElementById('screen3');if(!screen)return;
+  const host=document.createElement('div');host.id='experienceEditor';
+  host.innerHTML='<h3>Tapasztalat</h3><div class="expGrid"><input id="expRoleInput" placeholder="Munkakör"><input id="expCompanyInput" placeholder="Cég"><input id="expLocationInput" placeholder="Helyszín"><input id="expStartInput" placeholder="Kezdés (év / hónap)"><input id="expEndInput" placeholder="Befejezés (év / hónap vagy jelenleg)"><textarea class="full" id="expDescriptionInput" rows="3" placeholder="Feladatok, eredmények, leírás"></textarea></div><button id="addExperienceBtn" type="button">+ Tapasztalat hozzáadása</button><div id="experienceList"></div>';
+  const edu=document.getElementById('educationEditor');if(edu&&edu.parentNode)edu.parentNode.insertBefore(host,edu);else screen.appendChild(host);
+  let items=[];try{items=JSON.parse(localStorage.getItem('chyper_experience_v1')||'[]')}catch(e){}
+  const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  function preview(){
+    const heading=document.getElementById('expHeading');if(!heading)return;
+    const section=heading.closest('section');if(!section)return;
+    section.querySelectorAll('.job').forEach(x=>x.remove());
+    items.forEach(x=>{const d=document.createElement('div');d.className='job';d.innerHTML='<div class="jobTop"><span class="jobTitle">'+esc(x.role)+'</span><span class="jobDate">'+esc([x.start,x.end].filter(Boolean).join('–'))+'</span></div><div class="company">'+esc([x.company,x.location].filter(Boolean).join(' · '))+'</div>'+(x.description?'<p>'+esc(x.description).replace(/\n/g,'<br>')+'</p>':'');section.appendChild(d)});
+  }
+  function draw(){const list=document.getElementById('experienceList');list.innerHTML='';items.forEach((x,i)=>{const d=document.createElement('div');d.className='expItem';d.innerHTML='<button type="button" data-i="'+i+'">✕</button><b>'+esc(x.role)+'</b>'+(x.company?' — '+esc(x.company):'')+'<br><small>'+esc([x.location,[x.start,x.end].filter(Boolean).join('–')].filter(Boolean).join(' · '))+'</small>';list.appendChild(d)});list.querySelectorAll('button').forEach(b=>b.onclick=()=>{items.splice(+b.dataset.i,1);save()});preview()}
+  function save(){localStorage.setItem('chyper_experience_v1',JSON.stringify(items));draw()}
+  document.getElementById('addExperienceBtn').onclick=()=>{const x={role:expRoleInput.value.trim(),company:expCompanyInput.value.trim(),location:expLocationInput.value.trim(),start:expStartInput.value.trim(),end:expEndInput.value.trim(),description:expDescriptionInput.value.trim()};if(!x.role&&!x.company)return;items.push(x);['expRoleInput','expCompanyInput','expLocationInput','expStartInput','expEndInput','expDescriptionInput'].forEach(id=>document.getElementById(id).value='');save()};
+  draw();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
+</script>
