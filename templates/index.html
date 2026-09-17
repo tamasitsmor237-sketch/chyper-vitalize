@@ -712,10 +712,7 @@ document.getElementById("aiGenerate").onclick=async function(){
 const btn=this,status=document.getElementById("aiInterviewStatus");btn.disabled=true;status.textContent="AI dolgozik…";
 const answers={name:document.getElementById("aiName").value,role:document.getElementById("aiRole").value,email:document.getElementById("aiEmail").value,phone:document.getElementById("aiPhone").value,place:document.getElementById("aiPlace").value,experience:document.getElementById("aiExperience").value,education:document.getElementById("aiEducation").value,skills:document.getElementById("aiSkills").value,languages:document.getElementById("aiLanguages").value};
 const l=document.getElementById("uiLang");const language=(l&&l.selectedOptions&&l.selectedOptions[0]?l.selectedOptions[0].textContent:l&&l.value)||"English";
-try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:answers,language:language})});const d=await r.json();if(!r.ok)throw new Error(d.error||"AI error");["name","role","email","phone","place","profile","skills"].forEach(function(id){const e=document.getElementById(id);if(e&&d[id]!=null)e.value=d[id]});if(d.languages){localStorage.setItem("chyper_languages_v1",d.languages);const le=document.getElementById("languages");if(le){le.value=d.languages;le.dispatchEvent(new Event("input",{bubbles:true}))}const lp=document.getElementById("pLanguages");if(lp)lp.innerHTML=String(d.languages).split(/\n|,/).map(x=>x.trim()).filter(Boolean).map(x=>x.replace(/[&<>]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m]))).join("<br>")}
-if(d.experience) localStorage.setItem("chyper_experience_ai",d.experience);
-if(d.education){localStorage.setItem("chyper_education_quick",d.education);const eq=document.getElementById("educationQuickText");if(eq){eq.value=d.education;eq.dispatchEvent(new Event("input",{bubbles:true}))}}
-if(typeof render==="function")render();closeAI();if(typeof go==="function")go(3);window.scrollTo(0,0)}catch(e){status.textContent="Az AI-kérés nem sikerült. Próbáld újra."}finally{btn.disabled=false}};
+try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:answers,language:language})});const d=await r.json();if(!r.ok)throw new Error(d.error||"AI error");if(typeof window.applyAICVToEditor==="function")window.applyAICVToEditor(d);else{["name","role","email","phone","place","profile","skills"].forEach(function(id){const e=document.getElementById(id);if(e&&d[id]!=null){e.value=d[id];e.dispatchEvent(new Event("input",{bubbles:true}))}});if(typeof render==="function")render()}closeAI();if(typeof go==="function")go(3);window.scrollTo(0,0)}catch(e){status.textContent="Az AI-kérés nem sikerült. Próbáld újra."}finally{btn.disabled=false}};
 })();
 </script>
 
@@ -898,5 +895,36 @@ if(typeof render==="function")render();closeAI();if(typeof go==="function")go(3)
  }
  const screen=document.getElementById('screen3');if(screen&&!document.getElementById('aiReviewBtn')){const b=document.createElement('button');b.id='aiReviewBtn';b.type='button';b.className='secondary';b.style.marginTop='10px';b.textContent='✨ CV ellenőrzése AI-val';b.onclick=review;const dl=document.getElementById('downloadBtn');if(dl&&dl.parentNode)dl.parentNode.insertBefore(b,dl);else screen.appendChild(b)}
  document.getElementById('aiReviewClose').onclick=()=>document.getElementById('aiReviewOverlay').classList.remove('open');document.getElementById('aiReviewOverlay').onclick=e=>{if(e.target.id==='aiReviewOverlay')e.currentTarget.classList.remove('open')};
+})();
+</script>
+
+<script>
+/* AI -> editor/preview bridge: keep generated content visible in the actual CV. */
+(function(){
+ function escAI(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+ window.applyAICVToEditor=function(d){
+   ['name','role','email','phone','place','profile','skills'].forEach(id=>{const e=document.getElementById(id);if(e&&d[id]!=null){e.value=d[id];e.dispatchEvent(new Event('input',{bubbles:true}))}});
+   if(d.languages!=null){
+     localStorage.setItem('chyper_languages_v1',d.languages);
+     const le=document.getElementById('languages');if(le){le.value=d.languages;le.dispatchEvent(new Event('input',{bubbles:true}))}
+     const lp=document.getElementById('pLanguages');if(lp)lp.innerHTML=String(d.languages).split(/\n|,/).map(x=>x.trim()).filter(Boolean).map(escAI).join('<br>');
+   }
+   if(d.education!=null){
+     localStorage.setItem('chyper_education_quick',d.education);
+     const eq=document.getElementById('educationQuickText');if(eq)eq.value=d.education;
+     const eh=document.getElementById('eduHeading'),es=eh&&eh.closest('section');
+     if(es){[...es.children].forEach(x=>{if(x!==eh&&!x.classList.contains('divider'))x.remove()});const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=d.education;es.appendChild(p)}
+   }
+   if(d.experience!=null){
+     localStorage.setItem('chyper_experience_ai',d.experience);
+     localStorage.setItem('chyper_experience_v1','[]');
+     const list=document.getElementById('experienceList');if(list)list.innerHTML='';
+     const eh=document.getElementById('expHeading'),es=eh&&eh.closest('section');
+     if(es){es.querySelectorAll('.job').forEach(x=>x.remove());if(d.experience){const job=document.createElement('div');job.className='job';const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=d.experience;job.appendChild(p);es.appendChild(job)}}
+   }
+   if(typeof render==='function')render();
+   /* render() handles basic fields; restore custom sections afterwards because they are stored separately. */
+   const lp=document.getElementById('pLanguages');if(lp&&d.languages!=null)lp.innerHTML=String(d.languages).split(/\n|,/).map(x=>x.trim()).filter(Boolean).map(escAI).join('<br>');
+ }
 })();
 </script>
