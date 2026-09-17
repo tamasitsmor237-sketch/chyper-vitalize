@@ -746,9 +746,19 @@ try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Typ
    const candidates=['education','edu','studies'];for(const id of candidates){const e=document.getElementById(id);if(e){e.value=text;e.dispatchEvent(new Event('input',{bubbles:true}));break}}
    if(typeof render==='function')render();
   }
-  document.getElementById('addEducationBtn').onclick=()=>{
+  
+  function liveEducationDraft(){
+   const x={school:document.getElementById('eduSchool')?.value.trim()||'',degree:document.getElementById('eduDegree')?.value.trim()||'',location:document.getElementById('eduLocation')?.value.trim()||'',start:document.getElementById('eduStart')?.value.trim()||'',end:document.getElementById('eduEnd')?.value.trim()||'',description:document.getElementById('eduDescription')?.value.trim()||''};
+   const heading=document.getElementById('eduHeading'),section=heading&&heading.closest('section');if(!section)return;
+   let out=document.getElementById('pEducationDraft');if(!out){out=document.createElement('div');out.id='pEducationDraft';out.style.whiteSpace='pre-line';section.appendChild(out)}
+   const text=[x.school,x.degree,x.location,[x.start,x.end].filter(Boolean).join(' – '),x.description].filter(Boolean).join(' | ');
+   if(text){section.querySelectorAll('#pEducationAI,.edu,.education-item').forEach(n=>n.style.display='none');out.textContent=text;out.style.display='block'}
+   else {out.style.display='none';if(typeof window.paintEducation==='function')window.paintEducation()}
+  }
+  ['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].forEach(id=>{const e=document.getElementById(id);if(e){e.addEventListener('input',liveEducationDraft);e.addEventListener('change',liveEducationDraft)}});
+document.getElementById('addEducationBtn').onclick=()=>{
    const x={school:eduSchool.value.trim(),degree:eduDegree.value.trim(),location:eduLocation.value.trim(),start:eduStart.value.trim(),end:eduEnd.value.trim(),description:eduDescription.value.trim()};
-   if(!x.school&&!x.degree)return;items.push(x);['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].forEach(id=>document.getElementById(id).value='');save();
+   if(!x.school&&!x.degree)return;items.push(x);const draft=document.getElementById('pEducationDraft');if(draft)draft.style.display='none';['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].forEach(id=>document.getElementById(id).value='');save();
   };
   draw();
  }
