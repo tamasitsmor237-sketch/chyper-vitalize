@@ -753,3 +753,30 @@ try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Typ
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installEducation);else installEducation();
 })();
 </script>
+
+<style>
+#educationQuickEdit{display:none;margin-top:10px}
+#educationQuickEdit.open{display:block}
+#educationQuickText{width:100%;min-height:120px;box-sizing:border-box;padding:12px;border:1px solid rgba(0,0,0,.15);border-radius:10px;font:inherit;background:#fff}
+</style>
+<script>
+(function(){
+ function setup(){
+  const ed=document.getElementById('educationEditor');if(!ed||document.getElementById('educationQuickEdit'))return;
+  const h=ed.querySelector('h3');if(!h)return;
+  h.style.cursor='pointer';h.title='Kattints a szerkesztéshez';
+  const q=document.createElement('div');q.id='educationQuickEdit';q.innerHTML='<textarea id="educationQuickText" placeholder="Írd ide a tanulmányaidat…"></textarea>';
+  h.insertAdjacentElement('afterend',q);
+  h.onclick=()=>{q.classList.toggle('open');if(q.classList.contains('open'))document.getElementById('educationQuickText').focus()};
+  const t=q.querySelector('textarea');
+  t.addEventListener('input',()=>{
+   const target=document.getElementById('education')||document.getElementById('edu')||document.getElementById('studies');
+   if(target){target.value=t.value;target.dispatchEvent(new Event('input',{bubbles:true}))}
+   localStorage.setItem('chyper_education_quick',t.value);
+   if(typeof render==='function')render();
+  });
+  t.value=localStorage.getItem('chyper_education_quick')||'';
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+</script>
