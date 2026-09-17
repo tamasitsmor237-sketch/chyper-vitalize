@@ -560,3 +560,39 @@ setAll();
  }
 })();
 </script>
+
+<script>
+/* Checkout return fix v3: restore after language initialization and unlock only after verified payment */
+(function(){
+ const KEY='chyper_cv_full_state_v3';
+ function snapshot(){
+  const s={lang:document.getElementById('uiLang')?.value||'',fields:{},accent:getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()};
+  document.querySelectorAll('#screen3 input,#screen3 textarea,#screen3 select').forEach((e,i)=>{if(e.type!=='file')s.fields[e.id||('f'+i)]={value:e.value,checked:e.checked,type:e.type};});
+  localStorage.setItem(KEY,JSON.stringify(s));
+ }
+ function hydrate(){
+  const raw=localStorage.getItem(KEY); if(!raw)return false; const s=JSON.parse(raw);
+  if(s.lang){const l=document.getElementById('uiLang');l.value=s.lang;const cv=document.getElementById('cvLang');if(cv)cv.value=s.lang;if(typeof setAll==='function')setAll();}
+  Object.entries(s.fields||{}).forEach(([id,v])=>{const e=document.getElementById(id);if(!e)return;if(v.type==='checkbox'||v.type==='radio')e.checked=!!v.checked;else e.value=v.value;});
+  if(s.accent)document.documentElement.style.setProperty('--accent',s.accent);
+  if(typeof setAccentPosition==='function'){const a=document.getElementById('accentPosition');if(a)setAccentPosition(a.value);}
+  if(typeof render==='function')render(); return true;
+ }
+ document.addEventListener('input',e=>{if(e.target.closest?.('#screen3'))try{snapshot()}catch(_){}});
+ document.addEventListener('change',e=>{if(e.target.closest?.('#screen3'))try{snapshot()}catch(_){}});
+ const pay=document.getElementById('demoPay');if(pay)pay.addEventListener('click',()=>{try{snapshot()}catch(_){}},true);
+ async function paidReturn(){
+  const q=new URLSearchParams(location.search), sid=q.get('session_id'); if(q.get('payment')!=='success'||!sid)return;
+  try{
+   const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(sid));const d=await r.json();if(!r.ok||!d.paid)return;
+   hydrate(); if(typeof go==='function')go(3); hydrate();
+   window.paid=true;
+   document.getElementById('downloadBtn').style.display='none';document.getElementById('unlockedBtn').style.display='block';
+   const s=document.getElementById('paySuccess');if(s){s.style.display='block';s.textContent='✓ Fizetés sikeres · PDF letöltés feloldva.';}
+   history.replaceState({},'',location.pathname);
+   window.scrollTo(0,0);
+  }catch(e){}
+ }
+ setTimeout(paidReturn,250);
+})();
+</script>
