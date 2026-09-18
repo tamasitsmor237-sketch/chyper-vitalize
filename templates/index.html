@@ -1239,3 +1239,33 @@ document.getElementById('addEducationBtn').onclick=()=>{
  setTimeout(showDemo,850);
 })();
 </script>
+<script>
+/* Keep the example AI interview in the same language as the single selected app/CV language. */
+(function(){
+ const Q={
+  hu:{title:'Példa AI-interjú',qs:['Milyen munkakörre jelentkezel?','Milyen munkatapasztalatod van?','Milyen tanulmányaid vannak?','Milyen nyelveken beszélsz?']},
+  en:{title:'Example AI interview',qs:['What role are you applying for?','What work experience do you have?','What education do you have?','What languages do you speak?']},
+  de:{title:'Beispiel-KI-Interview',qs:['Für welche Stelle bewirbst du dich?','Welche Berufserfahrung hast du?','Welche Ausbildung hast du?','Welche Sprachen sprichst du?']},
+  fr:{title:'Exemple d’entretien IA',qs:['Pour quel poste postulez-vous ?','Quelle expérience professionnelle avez-vous ?','Quelles études avez-vous faites ?','Quelles langues parlez-vous ?']},
+  es:{title:'Ejemplo de entrevista con IA',qs:['¿A qué puesto te postulas?','¿Qué experiencia laboral tienes?','¿Qué estudios tienes?','¿Qué idiomas hablas?']},
+  it:{title:'Esempio di colloquio AI',qs:['Per quale ruolo ti candidi?','Quale esperienza lavorativa hai?','Quali studi hai completato?','Quali lingue parli?']},
+  sr:{title:'Primer AI intervjua',qs:['Za koju poziciju se prijavljujete?','Kakvo radno iskustvo imate?','Koje obrazovanje imate?','Koje jezike govorite?']}
+ };
+ function lang(){
+   const sels=[document.getElementById('uiLang'),document.getElementById('lang'),document.querySelector('select[name="language"]')].filter(Boolean);
+   const raw=(sels[0]?.value||document.documentElement.lang||'hu').toLowerCase();
+   if(raw.startsWith('sr'))return'sr'; if(raw.startsWith('de'))return'de'; if(raw.startsWith('fr'))return'fr'; if(raw.startsWith('es'))return'es'; if(raw.startsWith('it'))return'it'; if(raw.startsWith('en'))return'en'; return'hu';
+ }
+ function syncExampleInterview(){
+   const x=Q[lang()]||Q.hu;
+   document.querySelectorAll('[data-example-interview-title]').forEach(e=>e.textContent=x.title);
+   document.querySelectorAll('[data-example-interview-question]').forEach((e,i)=>{if(x.qs[i])e.textContent=x.qs[i]});
+   // Also translate the visible sample cards when their current text is one of our known sample questions.
+   const all=[...document.querySelectorAll('.exampleInterviewQuestion,.interview-example .question,.aiExampleQuestion')];
+   all.forEach((e,i)=>{if(x.qs[i])e.textContent=x.qs[i]});
+ }
+ document.addEventListener('change',e=>{if(e.target&&e.target.tagName==='SELECT')setTimeout(syncExampleInterview,20)});
+ window.syncExampleInterviewLanguage=syncExampleInterview;
+ setTimeout(syncExampleInterview,900);
+})();
+</script>
