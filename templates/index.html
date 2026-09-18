@@ -46,7 +46,7 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
 })();
 </script></head>
 <body>
-<div class="siteLogoStrip"><img src="/static/favicon-32x32.png?v=7" alt="Chyper Vitalize"><div class="siteWelcome" id="siteWelcome">Jó döntést hoztál, hogy minket választottál!</div><span></span></div>
+<div class="siteLogoStrip"><img src="/static/favicon-32x32.png?v=7" alt="Chyper Vitalize"><div class="siteWelcome" id="siteWelcome">Készítsd el az önéletrajzodat kevesebb mint 1 perc alatt!</div><span></span></div>
 <div class="app">
  <div class="top"><div class="brand">Chyper <span>Vitalize</span></div><div class="step" id="stepLabel">1 / 3 · Alkalmazás nyelve</div></div>
  <div class="shell">
@@ -246,7 +246,7 @@ document.getElementById('aiAnswer').addEventListener('keydown',e=>{if(e.key==='E
 
 document.getElementById('paywall').addEventListener('click',e=>{if(e.target.id==='paywall')closePayment()});
 </script>
-<div class="siteBottomStrip" id="siteBottomMessage">Készítsd el az önéletrajzodat kevesebb mint 1 perc alatt!</div>\n</body></html>
+<div class="siteBottomStrip" id="siteBottomMessage">Jó döntést hoztál, hogy minket választottál!</div>\n</body></html>
 
 <script>document.getElementById('uiLang').addEventListener('change',()=>setTimeout(refreshCurrency,0));setTimeout(refreshCurrency,0);</script>
 
@@ -411,7 +411,7 @@ function p(){ return P[uiLang.value] || P['English (US)']; }
 /* Translate every dynamically-added editor control from the same selected language pack. */
 function syncBottomMessageLanguage(){
  const M={'Magyar':'Készítsd el az önéletrajzodat kevesebb mint 1 perc alatt!','English (US)':'Create your resume in less than 1 minute!','English (UK)':'Create your CV in less than 1 minute!','Deutsch':'Erstelle deinen Lebenslauf in weniger als 1 Minute!','Français':'Créez votre CV en moins d’une minute !','Español':'¡Crea tu CV en menos de 1 minuto!','Italiano':'Crea il tuo CV in meno di 1 minuto!','Português':'Crie o seu CV em menos de 1 minuto!','Nederlands':'Maak je cv in minder dan 1 minuut!','Polski':'Stwórz swoje CV w mniej niż 1 minutę!','Čeština':'Vytvořte si CV za méně než 1 minutu!','Slovenčina':'Vytvorte si CV za menej ako 1 minútu!','Română':'Creează-ți CV-ul în mai puțin de 1 minut!','Hrvatski':'Izradite svoj životopis za manje od 1 minute!','Slovenščina':'Ustvarite svoj življenjepis v manj kot 1 minuti!','Srpski':'Napravite svoj CV za manje od 1 minuta!','Български':'Създайте своето CV за по-малко от 1 минута!','Ελληνικά':'Δημιουργήστε το βιογραφικό σας σε λιγότερο από 1 λεπτό!','Dansk':'Lav dit CV på mindre end 1 minut!','Svenska':'Skapa ditt CV på mindre än 1 minut!','Norsk':'Lag CV-en din på mindre enn 1 minutt!','Suomi':'Luo CV:si alle minuutissa!','Eesti':'Loo oma CV vähem kui 1 minutiga!','Latviešu':'Izveidojiet savu CV mazāk nekā 1 minūtē!','Lietuvių':'Sukurkite savo CV greičiau nei per 1 minutę!','Türkçe':'CV’nizi 1 dakikadan kısa sürede oluşturun!','Українська':'Створіть своє резюме менш ніж за 1 хвилину!','Русский':'Создайте своё резюме менее чем за 1 минуту!','हिन्दी':'अपना CV 1 मिनट से भी कम समय में बनाएं!','中文':'不到 1 分钟即可创建你的简历！','日本語':'1分以内で履歴書を作成！','한국어':'1분 안에 이력서를 만들어 보세요!','العربية':'أنشئ سيرتك الذاتية في أقل من دقيقة!'};
- const e=document.getElementById('siteBottomMessage');if(e)e.textContent=M[uiLang.value]||M['English (US)'];
+ const e=document.getElementById('siteWelcome');if(e)e.textContent=M[uiLang.value]||M['English (US)'];
 }
 function syncWelcomeLanguage(){
  const M={
@@ -419,7 +419,7 @@ function syncWelcomeLanguage(){
  'English (US)':'You made a great choice choosing us.','English (UK)':'You made a great choice choosing us.',
  'Deutsch':'Du hast eine gute Entscheidung getroffen, uns zu wählen.','Français':'Vous avez fait le bon choix en nous choisissant.','Español':'Has tomado una buena decisión al elegirnos.','Italiano':'Hai fatto un’ottima scelta scegliendo noi.','Português':'Fez uma ótima escolha ao escolher-nos.','Nederlands':'Je hebt een goede keuze gemaakt door voor ons te kiezen.','Polski':'To była dobra decyzja, aby wybrać nas.','Čeština':'Udělali jste dobré rozhodnutí, když jste si vybrali nás.','Slovenčina':'Urobili ste dobré rozhodnutie, keď ste si vybrali nás.','Română':'Ai făcut o alegere bună alegându-ne.','Hrvatski':'Donijeli ste dobru odluku odabravši nas.','Slovenščina':'Dobro ste se odločili, da ste izbrali nas.','Srpski':'Doneli ste dobru odluku što ste izabrali nas.','Български':'Направихте добър избор, като избрахте нас.','Ελληνικά':'Κάνατε μια καλή επιλογή που μας επιλέξατε.','Dansk':'Du traf et godt valg ved at vælge os.','Svenska':'Du gjorde ett bra val genom att välja oss.','Norsk':'Du tok et godt valg ved å velge oss.','Suomi':'Teit hyvän valinnan valitsemalla meidät.','Eesti':'Tegid hea valiku, valides meid.','Latviešu':'Jūs izdarījāt labu izvēli, izvēloties mūs.','Lietuvių':'Gerai pasirinkote pasirinkdami mus.','Türkçe':'Bizi seçerek iyi bir karar verdiniz.','Українська':'Ви зробили гарний вибір, обравши нас.','Русский':'Вы сделали хороший выбор, выбрав нас.','हिन्दी':'हमें चुनकर आपने अच्छा निर्णय लिया।','中文':'选择我们，是一个很好的决定。','日本語':'私たちを選んでいただいたのは良い選択です。','한국어':'저희를 선택하신 것은 좋은 결정입니다.','العربية':'لقد اتخذت قرارًا جيدًا باختيارنا.'
  };
- const e=document.getElementById('siteWelcome');if(e)e.textContent=M[uiLang.value]||M['English (US)'];
+ const e=document.getElementById('siteBottomMessage');if(e)e.textContent=M[uiLang.value]||M['English (US)'];
 }
 function syncDynamicEditorLanguage(){
   const a=p();
