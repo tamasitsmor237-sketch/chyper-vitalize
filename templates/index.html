@@ -1317,7 +1317,44 @@ document.getElementById('addEducationBtn').onclick=()=>{
  function lang(){const e=$('uiLang');return e?.selectedOptions?.[0]?.textContent||e?.value||'English'}
  window.offerMockInterview=function(){$('interviewOffer').classList.add('open')}
  function closeOffer(){$('interviewOffer').classList.remove('open')}
- function closeRoom(){$('mockInterviewRoom').classList.remove('open');if('speechSynthesis'in window)speechSynthesis.cancel()}
+ let kokoroTTS=null,kokoroAudio=null,kokoroLoading=null;
+ async function loadKokoro(){
+   if(kokoroTTS)return kokoroTTS;
+   if(kokoroLoading)return kokoroLoading;
+   $('interviewStatus').textContent='Natural interview voice loading…';
+   kokoroLoading=(async()=>{
+     const {KokoroTTS}=await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
+     kokoroTTS=await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX',{dtype:'q8',device:'wasm'});
+     return kokoroTTS;
+   })();
+   try{return await kokoroLoading}finally{kokoroLoading=null}
+ }
+ async function speakKokoro(text){
+   if(mode!=='voice'||!text)return;
+   try{
+     if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}
+     const tts=await loadKokoro();
+     $('interviewStatus').textContent='Interviewer speaking…';
+     const out=await tts.generate(text,{voice:'af_heart'});
+     let blob=null;
+     if(out?.toBlob)blob=await out.toBlob();
+     else if(out?.blob)blob=await out.blob();
+     else if(out?.audio instanceof Float32Array){
+       const samples=out.audio,sr=out.sampling_rate||out.sample_rate||24000;
+       const buf=new ArrayBuffer(44+samples.length*2),v=new DataView(buf);
+       const s=(o,x)=>{for(let i=0;i<x.length;i++)v.setUint8(o+i,x.charCodeAt(i))};
+       s(0,'RIFF');v.setUint32(4,36+samples.length*2,true);s(8,'WAVE');s(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);s(36,'data');v.setUint32(40,samples.length*2,true);
+       for(let i=0;i<samples.length;i++){const x=Math.max(-1,Math.min(1,samples[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}
+       blob=new Blob([buf],{type:'audio/wav'});
+     }
+     if(!blob)throw new Error('Unsupported Kokoro audio output');
+     const url=URL.createObjectURL(blob);kokoroAudio=new Audio(url);
+     kokoroAudio.onended=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent=''};
+     kokoroAudio.onerror=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent=''};
+     await kokoroAudio.play();
+   }catch(e){console.error('Kokoro voice error',e);$('interviewStatus').textContent='A természetes angol hang most nem tölthető be. Az interjú írásban továbbra is működik.'}
+ }
+ function closeRoom(){$('mockInterviewRoom').classList.remove('open');if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}}
  async function nextQuestion(answer){
    if(currentQuestion&&answer)history.push({question:currentQuestion,answer});
    $('interviewStatus').textContent='AI kérdés készítése…';$('sendInterviewAnswer').disabled=true;
@@ -1325,7 +1362,7 @@ document.getElementById('addEducationBtn').onclick=()=>{
     const r=await fetch('/api/mock-interview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cv:cvData(),history,language:lang(),style:interviewStyle})});
     const d=await r.json();if(!r.ok||!d.question)throw new Error();
     currentQuestion=d.question;$('interviewQuestion').textContent=currentQuestion;$('interviewAnswer').value='';$('interviewStatus').textContent='';
-    if(mode==='voice'&&'speechSynthesis'in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(currentQuestion);const htmlLang=document.documentElement.lang;if(htmlLang)u.lang=htmlLang;speechSynthesis.speak(u)}
+    if(mode==='voice')await speakKokoro(currentQuestion)
    }catch(e){$('interviewStatus').textContent='Az interjú most nem tudta elkészíteni a következő kérdést. Próbáld újra.'}
    finally{$('sendInterviewAnswer').disabled=false}
  }
