@@ -24,7 +24,15 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-</head>
+<script>
+(function(){
+ const V='chyper_clean_editor_v1';
+ if(localStorage.getItem(V)!=='1'){
+   ['chyper_education_v1','chyper_education_quick','chyper_experience_v1','chyper_experience_ai','chyper_languages_v1','chyper_cv_checkout_state_v1','chyper_cv_full_state_v2','chyper_cv_full_state_v3'].forEach(k=>localStorage.removeItem(k));
+   localStorage.setItem(V,'1');
+ }
+})();
+</script></head>
 <body>
 <div class="app">
  <div class="top"><div class="brand">Chyper <span>Vitalize</span></div><div class="step" id="stepLabel">1 / 3 · Alkalmazás nyelve</div></div>
@@ -44,7 +52,7 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
    </section>
    <section class="screen" id="screen3">
     <h2 id="editorTitle">CV szerkesztő</h2><div class="sub" id="editorSub">A módosítások azonnal megjelennek az élő A4-es előnézeten.</div>
-    <div class="group"><label class="label">Alapadatok</label><input class="input" id="name" value="Alex Morgan" placeholder="Teljes név"><input class="input" style="margin-top:8px" id="role" value="" placeholder="Szakmai cím"><div class="row" style="margin-top:8px"><input class="input" id="email" value="alex.morgan@email.com" placeholder="E-mail"><input class="input" id="phone" value="+36 30 123 4567" placeholder="Telefon"></div><input class="input" style="margin-top:8px" id="place" value="Budapest, Hungary" placeholder="Város, ország"></div>
+    <div class="group"><label class="label">Alapadatok</label><input class="input" id="name" value="" placeholder="Teljes név"><input class="input" style="margin-top:8px" id="role" value="" placeholder="Szakmai cím"><div class="row" style="margin-top:8px"><input class="input" id="email" value="" placeholder="E-mail"><input class="input" id="phone" value="" placeholder="Telefon"></div><input class="input" style="margin-top:8px" id="place" value="" placeholder="Város, ország"></div>
     <div class="group"><label class="label">Profilkép (opcionális)</label><input class="input" type="file" id="photoInput" accept="image/*"><div class="hint">Ha nincs kép, a CV automatikusan alkalmazkodik.</div></div>
     <div class="group"><label class="label">Díszléc helye</label><select class="select" id="accentPosition"><option value="top">Felül</option><option value="left">Bal oldalt</option><option value="right">Jobb oldalt</option><option value="top-left">Felül + bal oldalt</option><option value="top-right">Felül + jobb oldalt</option><option value="sections">Szekciók között</option><option value="none">Nincs díszléc</option></select><div class="hint">Válaszd ki, hol jelenjen meg a színes díszléc. A változás azonnal látszik az előnézeten.</div></div>
     <div class="group"><label class="label">Díszléc színe</label><div class="swatches" id="swatches"></div><div class="colorLine"><input type="color" class="colorPicker" id="picker" value="#2f6f8f"><input class="input" id="hex" value="#2F6F8F" maxlength="7"></div><div class="hint">Csak a díszítőelemek kapják ezt a színt. A háttér ivory, a szöveg sötét marad.</div></div>
@@ -56,12 +64,12 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
   <main class="previewWrap">
    <article class="cv" id="cv">
     <div id="bars"><div class="bar top"></div></div>
-    <header class="cvHeader"><div><div class="cvName" id="pName">ALEX MORGAN</div><div class="cvTitle" id="pRole"></div></div><div><div class="photo" id="photo">PROFILE<br>PHOTO</div><div class="contact" id="pContact">alex.morgan@email.com<br>+36 30 123 4567<br>Budapest, Hungary</div></div></header>
+    <header class="cvHeader"><div><div class="cvName" id="pName"></div><div class="cvTitle" id="pRole"></div></div><div><div class="photo" id="photo">PROFILE<br>PHOTO</div><div class="contact" id="pContact"></div></div></header>
     <div class="grid">
       <div>
        <section class="section drag"><h3 id="skillsHeading">Skills</h3><div class="divider"></div><ul id="pSkills"></ul></section>
-       <section class="section drag"><h3 id="langHeading">Languages</h3><div class="divider"></div><p id="pLanguages">Hungarian — Native<br>English — Professional<br>German — Intermediate</p></section>
-       <section class="section drag"><h3 id="eduHeading">Education</h3><div class="divider"></div><p><b>Bachelor of Business Administration</b><br>University Name<br>2018–2021</p></section>
+       <section class="section drag"><h3 id="langHeading">Languages</h3><div class="divider"></div><p id="pLanguages"></p></section>
+       <section class="section drag"><h3 id="eduHeading">Education</h3><div class="divider"></div><div id="educationPreview"></div></section>
       </div>
       <div>
        <section class="section drag"><h3 id="profileHeading">Profile</h3><div class="divider"></div><p id="pProfile"></p></section>
@@ -408,11 +416,7 @@ function setAll(){
   setText(refTitle,a[26]); setText(refText,a[27]); setText(shareBtn,a[28]); setText(copyBtn,a[29]); setText(discountMsg,a[30]); setText(aiTitle,a[31]);
 
   const dd=D[l];
-  if(dd){
-    role.value=dd.role;
-    profile.value=dd.profile;
-    skills.value=dd.skills;
-  }
+  if(dd && !role.value) role.placeholder=dd.role||role.placeholder;
   render();
   document.getElementById('stepLabel').textContent='1 / 2 · '+a[0];
 
@@ -1088,5 +1092,63 @@ document.getElementById('addEducationBtn').onclick=()=>{
  }
  window.renderEducationCanonical=renderEducationCanonical;
  document.addEventListener('DOMContentLoaded',bind);setTimeout(bind,100);setTimeout(bind,800);
+})();
+</script>
+
+<script>
+/* FINAL authoritative editor -> CV renderer */
+(function(){
+ const esc=s=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+ const v=id=>(document.getElementById(id)?.value||'').trim();
+
+ function educationRows(){
+   let saved=[];try{saved=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){}
+   const draft={school:v('eduSchool'),degree:v('eduDegree'),location:v('eduLocation'),start:v('eduStart'),end:v('eduEnd'),description:v('eduDescription')};
+   const hasDraft=Object.values(draft).some(Boolean);
+   return {saved, draft, hasDraft};
+ }
+ function renderEducation(){
+   const h=document.getElementById('eduHeading'),s=h&&h.closest('section');if(!s)return;
+   let out=document.getElementById('educationPreview');if(!out){out=document.createElement('div');out.id='educationPreview';s.appendChild(out)}
+   [...s.children].forEach(x=>{if(x!==h&&x!==out&&!x.classList.contains('divider'))x.style.display='none'});
+   const {saved,draft,hasDraft}=educationRows();
+   const rows=[...(hasDraft?[draft]:[]),...saved];
+   if(!rows.length){
+     const quick=(document.getElementById('educationQuickText')?.value||localStorage.getItem('chyper_education_quick')||'').trim();
+     out.innerHTML=quick?'<div style="white-space:pre-line">'+esc(quick)+'</div>':'';
+     return;
+   }
+   out.innerHTML=rows.map(x=>{
+     const title=[x.school,x.degree].filter(Boolean).join(' — ');
+     const meta=[x.location,[x.start,x.end].filter(Boolean).join(' – ')].filter(Boolean).join(' · ');
+     return '<div style="margin-bottom:10px">'+(title?'<b>'+esc(title)+'</b>':'')+(meta?'<div>'+esc(meta)+'</div>':'')+(x.description?'<div style="white-space:pre-line">'+esc(x.description)+'</div>':'')+'</div>';
+   }).join('');
+ }
+ function renderExperience(){
+   const h=document.getElementById('expHeading'),s=h&&h.closest('section');if(!s)return;
+   s.querySelectorAll('.job,#pExperienceAI').forEach(x=>x.remove());
+   let saved=[];try{saved=JSON.parse(localStorage.getItem('chyper_experience_v1')||'[]')}catch(e){}
+   const d={role:v('expRoleInput'),company:v('expCompanyInput'),location:v('expLocationInput'),start:v('expStartInput'),end:v('expEndInput'),description:v('expDescriptionInput')};
+   const rows=[...(Object.values(d).some(Boolean)?[d]:[]),...saved];
+   if(!rows.length){
+     const ai=(localStorage.getItem('chyper_experience_ai')||'').trim();if(ai){const x=document.createElement('div');x.className='job';x.style.whiteSpace='pre-line';x.textContent=ai;s.appendChild(x)}return;
+   }
+   rows.forEach(x=>{const d=document.createElement('div');d.className='job';d.innerHTML='<div class="jobTop"><span class="jobTitle">'+esc(x.role||'')+'</span><span class="jobDate">'+esc([x.start,x.end].filter(Boolean).join(' – '))+'</span></div><div class="company">'+esc([x.company,x.location].filter(Boolean).join(' · '))+'</div>'+(x.description?'<p style="white-space:pre-line">'+esc(x.description)+'</p>':'');s.appendChild(d)});
+ }
+ function renderAll(){
+   const n=document.getElementById('pName');if(n)n.textContent=v('name').toUpperCase();
+   const r=document.getElementById('pRole');if(r)r.textContent=v('role');
+   const con=document.getElementById('pContact');if(con)con.innerHTML=[v('email'),v('phone'),v('place')].filter(Boolean).map(esc).join('<br>');
+   const pro=document.getElementById('pProfile');if(pro)pro.textContent=v('profile');
+   const sk=document.getElementById('pSkills');if(sk)sk.innerHTML=v('skills').split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>'<li>'+esc(x)+'</li>').join('');
+   const la=document.getElementById('pLanguages');if(la){const txt=v('languages');if(txt)localStorage.setItem('chyper_languages_v1',txt);la.innerHTML=txt.split(/\n|,/).map(x=>x.trim()).filter(Boolean).map(esc).join('<br>')}
+   renderEducation();renderExperience();
+ }
+ const watched=new Set(['name','role','email','phone','place','profile','skills','languages','eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription','educationQuickText','expRoleInput','expCompanyInput','expLocationInput','expStartInput','expEndInput','expDescriptionInput']);
+ document.addEventListener('input',e=>{if(e.target&&watched.has(e.target.id))renderAll()});
+ document.addEventListener('change',e=>{if(e.target&&watched.has(e.target.id))renderAll()});
+ document.addEventListener('click',e=>{if(e.target?.id==='addEducationBtn'||e.target?.id==='addExperienceBtn'||e.target?.closest?.('#educationList button')||e.target?.closest?.('#experienceList button'))setTimeout(renderAll,0)});
+ window.renderCVFromEditor=renderAll;
+ setTimeout(renderAll,50);setTimeout(renderAll,500);
 })();
 </script>
