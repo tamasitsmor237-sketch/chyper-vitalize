@@ -652,77 +652,7 @@ setAll();
 })();
 </script>
 
-<style>
-#buildModeOverlay{position:fixed;inset:0;background:rgba(18,18,18,.42);backdrop-filter:blur(8px);z-index:10020;display:none;align-items:center;justify-content:center;padding:22px}
-#buildModeOverlay.open{display:flex}
-#buildModeCard{width:min(720px,100%);background:#f7f3e9;border:1px solid rgba(0,0,0,.12);border-radius:24px;padding:28px;box-shadow:0 28px 80px rgba(0,0,0,.24)}
-#buildModeCard h2{margin:0 0 8px;font-size:28px}#buildModeCard p{margin:0 0 22px;opacity:.7}
-.buildModeGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.buildModeBtn{border:1px solid rgba(0,0,0,.14);background:#fff;border-radius:18px;padding:22px;text-align:left;cursor:pointer;font:inherit}
-.buildModeBtn:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,0,0,.08)}
-.buildModeBtn b{display:block;font-size:18px;margin-bottom:6px}.buildModeBtn span{opacity:.68;font-size:14px}
-@media(max-width:620px){.buildModeGrid{grid-template-columns:1fr}}
-</style>
-<div id="buildModeOverlay">
- <div id="buildModeCard">
-  <h2 id="buildModeTitle">Hogyan szeretnéd elkészíteni a CV-det?</h2>
-  <p id="buildModeSub">Bármelyiket választod, később mindent szabadon szerkeszthetsz.</p>
-  <div class="buildModeGrid">
-   <button class="buildModeBtn" id="manualModeBtn" type="button"><b>✍️ Kitöltöm én</b><span>Nyisd meg a szerkesztőt, és tölts ki mindent saját magad.</span></button>
-   <button class="buildModeBtn" id="aiModeBtn" type="button"><b>✨ AI-interjúval készítem</b><span>Az AI kérdez, majd a válaszaidból összeállítja a CV első változatát.</span></button>
-  </div>
- </div>
-</div>
-<script>
-(function(){
- let modeAsked=false;
- const overlay=document.getElementById('buildModeOverlay');
- function showMode(){if(overlay){modeAsked=true;overlay.classList.add('open');window.scrollTo(0,0)}}
- function hideMode(){if(overlay)overlay.classList.remove('open')}
- document.getElementById('manualModeBtn').onclick=function(){hideMode();if(typeof go==='function')go(3)};
- document.getElementById('aiModeBtn').onclick=function(){
-   hideMode();
-   const candidates=['aiInterviewBtn','startAiBtn','aiBtn','interviewBtn'];
-   for(const id of candidates){const b=document.getElementById(id);if(b){b.click();return}}
-   if(typeof go==='function')go(3);
-   setTimeout(()=>{const els=[...document.querySelectorAll('button')];const b=els.find(x=>/AI.?interj|AI.?interview/i.test(x.textContent||''));if(b)b.click()},100);
- };
- const oldStart=window.startInChosenLanguage;
- if(typeof oldStart==='function'){
-   window.startInChosenLanguage=function(){showMode()};
- }
- const cont=document.getElementById('continueBtn');
- if(cont)cont.onclick=function(e){e.preventDefault();showMode()};
-})();
-</script>
 
-<style>
-#aiInterviewOverlay{position:fixed;inset:0;background:rgba(18,18,18,.48);backdrop-filter:blur(8px);z-index:10030;display:none;align-items:center;justify-content:center;padding:20px}#aiInterviewOverlay.open{display:flex}#aiInterviewCard{width:min(650px,100%);max-height:90vh;overflow:auto;background:#f7f3e9;border-radius:24px;padding:28px;box-shadow:0 28px 80px rgba(0,0,0,.25)}.aiQ{display:block;margin:14px 0 6px;font-weight:700}.aiA{width:100%;box-sizing:border-box;border:1px solid rgba(0,0,0,.15);border-radius:12px;padding:12px;background:white;font:inherit}.aiActions{display:flex;gap:10px;margin-top:20px}.aiActions button{padding:13px 18px;border-radius:12px;border:0;cursor:pointer;font:inherit}.aiPrimary{background:#111;color:#fff}.aiSecondary{background:#e9e4d8}
-</style>
-<div id="aiInterviewOverlay"><div id="aiInterviewCard"><h2>✨ AI CV-interjú</h2><p>Válaszolj röviden. Az AI csak a megadott adataidból készít CV-vázlatot.</p>
-<label class="aiQ">Mi a teljes neved?</label><input class="aiA" id="aiName">
-<label class="aiQ">Milyen munkakört keresel?</label><input class="aiA" id="aiRole">
-<label class="aiQ">Email címed?</label><input class="aiA" id="aiEmail">
-<label class="aiQ">Telefonszámod?</label><input class="aiA" id="aiPhone">
-<label class="aiQ">Hol élsz? (város, ország)</label><input class="aiA" id="aiPlace">
-<label class="aiQ">Tapasztalatok</label><textarea class="aiA" id="aiExperience" rows="4" placeholder="Munkakör, cég, helyszín, időszak, főbb feladatok"></textarea>
-<label class="aiQ">Tanulmányok</label><textarea class="aiA" id="aiEducation" rows="4" placeholder="Iskola / intézmény, szak vagy képzés, helyszín, időszak"></textarea>
-<label class="aiQ">Mik a legerősebb készségeid?</label><textarea class="aiA" id="aiSkills" rows="3"></textarea>
-<label class="aiQ">Nyelvismeretek</label><textarea class="aiA" id="aiLanguages" rows="3" placeholder="Pl. Magyar — anyanyelvi, Angol — középfok"></textarea>
-<div id="aiInterviewStatus" style="margin-top:12px"></div><div class="aiActions"><button class="aiSecondary" id="aiCancel" type="button">Vissza</button><button class="aiPrimary" id="aiGenerate" type="button">CV elkészítése AI-val</button></div></div></div>
-<script>
-(function(){
-const o=document.getElementById("aiInterviewOverlay");
-function openAI(){o.classList.add("open");window.scrollTo(0,0)} function closeAI(){o.classList.remove("open")}
-document.getElementById("aiCancel").onclick=closeAI;
-document.getElementById("aiModeBtn").onclick=function(){document.getElementById("buildModeOverlay").classList.remove("open");openAI()};
-document.getElementById("aiGenerate").onclick=async function(){
-const btn=this,status=document.getElementById("aiInterviewStatus");btn.disabled=true;status.textContent="AI dolgozik…";
-const answers={name:document.getElementById("aiName").value,role:document.getElementById("aiRole").value,email:document.getElementById("aiEmail").value,phone:document.getElementById("aiPhone").value,place:document.getElementById("aiPlace").value,experience:document.getElementById("aiExperience").value,education:document.getElementById("aiEducation").value,skills:document.getElementById("aiSkills").value,languages:document.getElementById("aiLanguages").value};
-const l=document.getElementById("uiLang");const language=(l&&l.selectedOptions&&l.selectedOptions[0]?l.selectedOptions[0].textContent:l&&l.value)||"English";
-try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:answers,language:language})});const d=await r.json();if(!r.ok)throw new Error(d.error||"AI error");if(typeof window.applyAICVToEditor==="function")window.applyAICVToEditor(d);else{["name","role","email","phone","place","profile","skills"].forEach(function(id){const e=document.getElementById(id);if(e&&d[id]!=null){e.value=d[id];e.dispatchEvent(new Event("input",{bubbles:true}))}});if(typeof render==="function")render()}closeAI();if(typeof go==="function")go(3);window.scrollTo(0,0)}catch(e){status.textContent="Az AI-kérés nem sikerült. Próbáld újra."}finally{btn.disabled=false}};
-})();
-</script>
 
 <style>
 #educationEditor{margin-top:18px;padding:18px;border:1px solid rgba(0,0,0,.12);border-radius:16px;background:rgba(255,255,255,.55)}
