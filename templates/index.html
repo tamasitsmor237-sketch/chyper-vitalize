@@ -1307,104 +1307,36 @@ document.getElementById('addEducationBtn').onclick=()=>{
 @media(max-width:600px){.interviewStylePicker,.interviewChoices{grid-template-columns:1fr}.interviewCard{padding:20px}.interviewQuestion{font-size:18px}}
 </style>
 <div id="interviewOffer"><div class="interviewCard"><button class="interviewClose" type="button" data-close-offer>×</button><h2 id="interviewOfferTitle">Készülj fel az állásinterjúra is!</h2><p class="interviewLead" id="interviewOfferText">A CV-d alapján személyre szabott próba-interjút készítünk, hogy magabiztosabban érkezz az állásinterjúra.</p><button class="primary" id="startInterviewOffer" type="button">Próbáld ki az interjút</button><button class="secondary" id="skipInterviewOffer" type="button" style="margin-top:8px">Most nem</button></div></div>
-<div id="mockInterviewRoom"><div class="interviewCard voiceOnlyRoom"><button class="interviewClose" type="button" data-close-room>×</button><h2 id="interviewRoomTitle">AI állásinterjú</h2><p class="interviewLead">Beszélj természetesen, mintha egy valódi állásinterjún lennél.</p><div id="interviewSession"><div class="interviewQuestion" id="interviewQuestion">Az AI interjúztató felkészül…</div><div class="voicePulse" id="voicePulse">🎙️ Hallgatlak…</div><textarea class="interviewAnswer" id="interviewAnswer" aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"></textarea><div class="interviewActions"><button class="secondary" id="speakInterviewAnswer" type="button">🎙️ Mikrofon újraindítása</button><button class="primary" id="sendInterviewAnswer" type="button" style="display:none">Válasz elküldése</button></div><div class="interviewMeta" id="interviewStatus">AI interview room</div></div></div></div>
+<div id="mockInterviewRoom"><div class="interviewCard"><button class="interviewClose" type="button" data-close-room>×</button><h2 id="interviewRoomTitle">Próba állásinterjú</h2><p class="interviewLead">Válaszolj írásban úgy, mintha egy valódi állásinterjún lennél.</p><div id="interviewSession"><div class="interviewQuestion" id="interviewQuestion">Az interjúztató készíti a kérdést…</div><textarea class="interviewAnswer" id="interviewAnswer" rows="5" placeholder="Írd ide a válaszodat…"></textarea><div class="interviewActions"><button class="primary" id="sendInterviewAnswer" type="button">Válasz elküldése</button></div><div class="interviewMeta" id="interviewStatus"></div></div></div></div>
 <script>
 (function(){
  const $=id=>document.getElementById(id), history=[];
- let mode='voice', interviewStyle='professional', currentQuestion='',activeRecognition=null,voiceClosing=false,questionBusy=false;
+ let currentQuestion='',questionBusy=false,questionNumber=0;
  function val(id){return $(id)?.value||''}
  function cvData(){return {role:val('role'),profile:val('profile'),skills:val('skills'),experience:localStorage.getItem('chyper_experience_ai')||localStorage.getItem('chyper_experience_v1')||'',education:localStorage.getItem('chyper_education_quick')||localStorage.getItem('chyper_education_v1')||'',languages:localStorage.getItem('chyper_languages_v1')||val('languages')}}
  function lang(){const e=$('uiLang');return e?.selectedOptions?.[0]?.textContent||e?.value||'English'}
  window.offerMockInterview=function(){$('interviewOffer').classList.add('open')}
  function closeOffer(){$('interviewOffer').classList.remove('open')}
- let kokoroTTS=null,kokoroAudio=null,kokoroLoading=null;
- async function loadKokoro(){
-   if(kokoroTTS)return kokoroTTS;
-   if(kokoroLoading)return kokoroLoading;
-   $('interviewStatus').textContent='Natural interview voice loading…';
-   kokoroLoading=(async()=>{
-     const {KokoroTTS}=await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
-     kokoroTTS=await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX',{dtype:'q8',device:'wasm'});
-     return kokoroTTS;
-   })();
-   try{return await kokoroLoading}finally{kokoroLoading=null}
- }
- async function speakKokoro(text){
-   if(mode!=='voice'||!text)return;
-   try{
-     if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}
-     const tts=await loadKokoro();
-     $('interviewStatus').textContent='Interviewer speaking…';
-     const out=await tts.generate(text,{voice:'af_heart'});
-     let blob=null;
-     if(out?.toBlob)blob=await out.toBlob();
-     else if(out?.blob)blob=await out.blob();
-     else if(out?.audio instanceof Float32Array){
-       const samples=out.audio,sr=out.sampling_rate||out.sample_rate||24000;
-       const buf=new ArrayBuffer(44+samples.length*2),v=new DataView(buf);
-       const s=(o,x)=>{for(let i=0;i<x.length;i++)v.setUint8(o+i,x.charCodeAt(i))};
-       s(0,'RIFF');v.setUint32(4,36+samples.length*2,true);s(8,'WAVE');s(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);s(36,'data');v.setUint32(40,samples.length*2,true);
-       for(let i=0;i<samples.length;i++){const x=Math.max(-1,Math.min(1,samples[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}
-       blob=new Blob([buf],{type:'audio/wav'});
-     }
-     if(!blob&&out?.audio?.audio instanceof Float32Array){const samples=out.audio.audio,sr=out.audio.sampling_rate||24000;const buf=new ArrayBuffer(44+samples.length*2),v=new DataView(buf);const s=(o,x)=>{for(let i=0;i<x.length;i++)v.setUint8(o+i,x.charCodeAt(i))};s(0,'RIFF');v.setUint32(4,36+samples.length*2,true);s(8,'WAVE');s(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);s(36,'data');v.setUint32(40,samples.length*2,true);for(let i=0;i<samples.length;i++){const x=Math.max(-1,Math.min(1,samples[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}blob=new Blob([buf],{type:'audio/wav'})}if(!blob)throw new Error('Unsupported Kokoro audio output');
-     const url=URL.createObjectURL(blob);kokoroAudio=new Audio(url);
-     kokoroAudio.onended=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent='';if(mode==='voice'&&!voiceClosing)setTimeout(startVoiceListening,250)};
-     kokoroAudio.onerror=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent=''};
-     await kokoroAudio.play();
-   }catch(e){console.error('Kokoro voice error',e);$('interviewStatus').textContent='A természetes angol hang most nem tölthető be. Az interjú írásban továbbra is működik.'}
- }
- function closeRoom(){voiceClosing=true;$('mockInterviewRoom').classList.remove('open');if(activeRecognition){try{activeRecognition.abort()}catch(e){}activeRecognition=null}if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}}
- async function startVoiceListening(){
-   if(mode!=='voice'||voiceClosing)return;
-   if(questionBusy){$('interviewStatus').textContent='Az AI még készíti a kérdést…';return;}
-   $('interviewStatus').textContent='Mikrofon indítása…';
-   try{
-     if(!navigator.mediaDevices?.getUserMedia)throw new Error('no-media');
-     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-     stream.getTracks().forEach(t=>t.stop());
-   }catch(e){$('voicePulse').classList.remove('on');$('interviewStatus').textContent='⚠️ Engedélyezd a mikrofont ennél az oldalnál.';return}
-   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-   if(!SR){$('interviewStatus').textContent='⚠️ A Voice interjúhoz Chrome szükséges ezen az eszközön.';return}
-   if(activeRecognition){try{activeRecognition.abort()}catch(e){}}
-   const rec=new SR();activeRecognition=rec;rec.lang='en-US';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
-   let transcript='',submitted=false;
-   const submit=()=>{
-     if(submitted||questionBusy||voiceClosing)return;
-     const answer=transcript.trim();
-     if(!answer)return;
-     submitted=true;activeRecognition=null;rec.onend=null;
-     $('voicePulse').classList.remove('on');$('interviewStatus').textContent='Válasz feldolgozása…';
-     try{rec.stop()}catch(e){}
-     setTimeout(()=>nextQuestion(answer),120);
-   };
-   rec.onstart=()=>{$('voicePulse').classList.add('on');$('interviewStatus').textContent='🎙️ Hallgatlak…'};
-   rec.onspeechstart=()=>{$('interviewStatus').textContent='🎙️ Hallom a hangodat…'};
-   rec.onresult=e=>{let parts=[];for(let i=0;i<e.results.length;i++)parts.push(e.results[i][0].transcript);transcript=parts.join(' ').trim();$('interviewAnswer').value=transcript;if(transcript)$('interviewStatus').textContent='🎙️ Hallom: '+transcript};
-   rec.onspeechend=()=>setTimeout(submit,350);
-   rec.onerror=e=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(e.error!=='aborted')$('interviewStatus').textContent='⚠️ Mikrofon hiba: '+e.error};
-   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(transcript.trim())submit();else if(!voiceClosing)$('interviewStatus').textContent='Nem érzékeltem beszédet. Nyomd meg a mikrofont és próbáld újra.'};
-   try{rec.start()}catch(e){activeRecognition=null;$('interviewStatus').textContent='⚠️ A mikrofon nem indult el.'}
- }
+ function closeRoom(){$('mockInterviewRoom').classList.remove('open')}
  async function nextQuestion(answer){
-   if(questionBusy)return;questionBusy=true;
-   if(activeRecognition){try{activeRecognition.abort()}catch(e){}activeRecognition=null}
+   if(questionBusy)return;
    if(currentQuestion&&answer)history.push({question:currentQuestion,answer});
-   $('interviewStatus').textContent='AI kérdés készítése…';$('sendInterviewAnswer').disabled=true;
+   questionBusy=true;$('sendInterviewAnswer').disabled=true;$('interviewStatus').textContent='Következő kérdés készítése…';
    try{
-    const r=await fetch('/api/mock-interview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cv:cvData(),history,language:lang(),style:interviewStyle})});
-    const d=await r.json();if(!r.ok||!d.question)throw new Error();
-    currentQuestion=d.question;$('interviewQuestion').textContent=currentQuestion;$('interviewAnswer').value='';$('interviewStatus').textContent='';
-    if(mode==='voice')await speakKokoro(currentQuestion)
-   }catch(e){$('interviewStatus').textContent='Az interjú most nem tudta elkészíteni a következő kérdést. Próbáld újra.'}
+     const r=await fetch('/api/mock-interview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cv:cvData(),history,language:lang(),style:'professional'})});
+     const d=await r.json();if(!r.ok||!d.question)throw new Error(d.error||'Interview error');
+     currentQuestion=d.question;questionNumber++;
+     $('interviewQuestion').textContent=questionNumber+'. '+currentQuestion;
+     $('interviewAnswer').value='';$('interviewAnswer').focus();$('interviewStatus').textContent='';
+   }catch(e){$('interviewStatus').textContent='Nem sikerült betölteni a következő kérdést. Próbáld újra.'}
    finally{questionBusy=false;$('sendInterviewAnswer').disabled=false}
  }
- function startVoiceInterview(){voiceClosing=false;questionBusy=false;mode='voice';history.length=0;currentQuestion='';$('interviewAnswer').value='';nextQuestion('')}
- function begin(){closeOffer();$('mockInterviewRoom').classList.add('open');startVoiceInterview()}
- $('startInterviewOffer').onclick=begin;$('skipInterviewOffer').onclick=closeOffer;document.querySelector('[data-close-offer]').onclick=closeOffer;document.querySelector('[data-close-room]').onclick=closeRoom;
- 
+ function begin(){closeOffer();history.length=0;currentQuestion='';questionNumber=0;$('interviewAnswer').value='';$('mockInterviewRoom').classList.add('open');nextQuestion('')}
+ $('startInterviewOffer').onclick=begin;
+ $('skipInterviewOffer').onclick=closeOffer;
+ document.querySelector('[data-close-offer]').onclick=closeOffer;
+ document.querySelector('[data-close-room]').onclick=closeRoom;
  $('sendInterviewAnswer').onclick=()=>{const a=$('interviewAnswer').value.trim();if(a&&!questionBusy)nextQuestion(a)};
- $('interviewAnswer').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const a=e.target.value.trim();if(a)nextQuestion(a)}});
- $('speakInterviewAnswer').onclick=startVoiceListening;
+ $('interviewAnswer').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();const a=e.target.value.trim();if(a&&!questionBusy)nextQuestion(a)}});
 })();
 </script>
