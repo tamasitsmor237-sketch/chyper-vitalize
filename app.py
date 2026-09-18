@@ -15,11 +15,11 @@ def index():
 
 @app.get('/favicon.ico')
 def favicon_ico():
-    return app.send_static_file('favicon.svg')
+    return app.send_static_file('favicon.ico')
 
 @app.get('/apple-touch-icon.png')
 def apple_touch_icon():
-    return app.send_static_file('favicon.svg')
+    return app.send_static_file('favicon-32x32.png')
 
 @app.get('/health')
 def health():
