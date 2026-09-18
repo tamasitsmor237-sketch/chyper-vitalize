@@ -1269,3 +1269,38 @@ document.getElementById('addEducationBtn').onclick=()=>{
  setTimeout(syncExampleInterview,900);
 })();
 </script>
+<script>
+/* Localize empty-state CV examples to the single selected UI/CV language. */
+(function(){
+ const EX={
+  hu:{skills:['Kommunikáció','Csapatmunka','Microsoft Office'],profile:'Motivált, megbízható pályakezdő, aki gyorsan tanul és szívesen dolgozik csapatban.',langs:['Magyar — anyanyelvi','Angol — középfok'],exp:['Csapattag',"McDonald’s · Budapest",'2024 – 2025','Vendégek kiszolgálása és csapatmunka.'],edu:['Harvard University','Gazdálkodás és menedzsment','Cambridge, MA · 2021 – 2025']},
+  en:{skills:['Communication','Teamwork','Microsoft Office'],profile:'Motivated and reliable professional who learns quickly and enjoys working in a team.',langs:['English — native','German — intermediate'],exp:['Crew Member',"McDonald’s · London",'2024 – 2025','Customer service and teamwork in a fast-paced environment.'],edu:['Harvard University','Business Administration','Cambridge, MA · 2021 – 2025']},
+  de:{skills:['Kommunikation','Teamarbeit','Microsoft Office'],profile:'Motivierte und zuverlässige Fachkraft, die schnell lernt und gerne im Team arbeitet.',langs:['Deutsch — Muttersprache','Englisch — Mittelstufe'],exp:['Teammitglied',"McDonald’s · Berlin",'2024 – 2025','Kundenservice und Teamarbeit in einem dynamischen Umfeld.'],edu:['Harvard University','Betriebswirtschaftslehre','Cambridge, MA · 2021 – 2025']},
+  fr:{skills:['Communication',"Travail d’équipe",'Microsoft Office'],profile:"Professionnel motivé et fiable, qui apprend rapidement et apprécie le travail en équipe.",langs:['Français — langue maternelle','Anglais — niveau intermédiaire'],exp:["Équipier polyvalent","McDonald’s · Paris",'2024 – 2025',"Service client et travail d’équipe dans un environnement dynamique."],edu:['Harvard University','Administration des affaires','Cambridge, MA · 2021 – 2025']},
+  es:{skills:['Comunicación','Trabajo en equipo','Microsoft Office'],profile:'Profesional motivado y responsable, con capacidad de aprendizaje rápido y trabajo en equipo.',langs:['Español — nativo','Inglés — nivel intermedio'],exp:['Miembro del equipo',"McDonald’s · Madrid",'2024 – 2025','Atención al cliente y trabajo en equipo.'],edu:['Harvard University','Administración de Empresas','Cambridge, MA · 2021 – 2025']},
+  it:{skills:['Comunicazione','Lavoro di squadra','Microsoft Office'],profile:'Professionista motivato e affidabile, rapido nell’apprendimento e orientato al lavoro di squadra.',langs:['Italiano — madrelingua','Inglese — livello intermedio'],exp:['Membro del team',"McDonald’s · Milano",'2024 – 2025','Servizio clienti e lavoro di squadra.'],edu:['Harvard University','Economia aziendale','Cambridge, MA · 2021 – 2025']},
+  pt:{skills:['Comunicação','Trabalho em equipa','Microsoft Office'],profile:'Profissional motivado e responsável, com aprendizagem rápida e gosto pelo trabalho em equipa.',langs:['Português — nativo','Inglês — intermédio'],exp:['Membro da equipa',"McDonald’s · Lisboa",'2024 – 2025','Atendimento ao cliente e trabalho em equipa.'],edu:['Harvard University','Administração de Empresas','Cambridge, MA · 2021 – 2025']},
+  nl:{skills:['Communicatie','Teamwerk','Microsoft Office'],profile:'Gemotiveerde en betrouwbare professional die snel leert en graag in teamverband werkt.',langs:['Nederlands — moedertaal','Engels — gemiddeld'],exp:['Teammedewerker',"McDonald’s · Amsterdam",'2024 – 2025','Klantenservice en teamwork.'],edu:['Harvard University','Bedrijfskunde','Cambridge, MA · 2021 – 2025']},
+  sr:{skills:['Komunikacija','Timski rad','Microsoft Office'],profile:'Motivisana i pouzdana osoba koja brzo uči i voli timski rad.',langs:['Srpski — maternji','Engleski — srednji nivo'],exp:['Član tima',"McDonald’s · Beograd",'2024 – 2025','Rad sa gostima i timski rad.'],edu:['Harvard University','Poslovna administracija','Cambridge, MA · 2021 – 2025']}
+ };
+ function code(){
+   const s=document.querySelector('select:has(option:checked)'); const v=(s?.value||s?.selectedOptions?.[0]?.textContent||document.documentElement.lang||'hu').toLowerCase();
+   if(v.includes('fr'))return'fr';if(v.includes('de'))return'de';if(v.includes('es'))return'es';if(v.includes('it'))return'it';if(v.includes('port')||v.startsWith('pt'))return'pt';if(v.includes('neder')||v.startsWith('nl'))return'nl';if(v.includes('срп')||v.includes('srp')||v.startsWith('sr'))return'sr';if(v.includes('english')||v.startsWith('en'))return'en';return'hu';
+ }
+ function empty(id){return !(document.getElementById(id)?.value||'').trim()}
+ function sync(){
+   const x=EX[code()]||EX.hu;
+   const sk=document.getElementById('exampleSkills');if(sk&&empty('skills'))sk.textContent=x.skills.join('\n');
+   const pr=document.getElementById('exampleProfile');if(pr&&empty('profile'))pr.textContent=x.profile;
+   const la=document.getElementById('exampleLanguages');if(la&&empty('languages'))la.textContent=x.langs.join('\n');
+   const ex=document.getElementById('demoExperience')||document.getElementById('exampleExperience');if(ex)ex.innerHTML='<b>'+x.exp[0]+'</b><div>'+x.exp[1]+'</div><div>'+x.exp[2]+'</div><div>'+x.exp[3]+'</div>';
+   const ed=document.getElementById('demoEducation')||document.getElementById('exampleEducation');if(ed)ed.innerHTML='<b>'+x.edu[0]+'</b><div>'+x.edu[1]+'</div><div>'+x.edu[2]+'</div>';
+   // Older demo nodes in the original preview.
+   const ps=document.getElementById('pSkills');if(ps&&empty('skills'))ps.innerHTML=x.skills.map(v=>'<li>'+v+'</li>').join('');
+   const pp=document.getElementById('pProfile');if(pp&&empty('profile'))pp.textContent=x.profile;
+   const pl=document.getElementById('pLanguages');if(pl&&empty('languages'))pl.innerHTML=x.langs.join('<br>');
+ }
+ document.addEventListener('change',e=>{if(e.target?.tagName==='SELECT')setTimeout(sync,60)});
+ window.syncCVExampleLanguage=sync;setTimeout(sync,1100);
+})();
+</script>
