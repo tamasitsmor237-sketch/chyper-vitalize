@@ -12,7 +12,7 @@
 <style>
 :root{--accent:#2f6f8f;--ivory:#fbf8ef;--ink:#1d2329;--muted:#6d747b;--panel:#fff;--line:#e6e1d6}
 *{box-sizing:border-box} body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f4f6;color:#16191d}
-button,input,select,textarea{font:inherit}.siteLogoStrip{height:46px;background:#fff;display:grid;grid-template-columns:30px 1fr 30px;align-items:center;padding:0 26px;border-bottom:1px solid #eef0f2}.siteLogoStrip img{width:30px;height:30px;display:block}.siteWelcome{text-align:center;font-size:13px;font-weight:650;color:#5f6670}.app{min-height:100vh}.top{height:66px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:10}.brand{font-weight:800;letter-spacing:-.04em;font-size:22px}.brand span{color:var(--accent)}.step{font-size:13px;color:#6b7280}
+button,input,select,textarea{font:inherit}.siteLogoStrip{height:46px;background:#fff;display:grid;grid-template-columns:30px 1fr 30px;align-items:center;padding:0 26px;border-bottom:1px solid #eef0f2}.siteLogoStrip img{width:30px;height:30px;display:block}.siteWelcome{text-align:center;font-size:13px;font-weight:650;color:#5f6670}.siteBottomStrip{min-height:46px;background:#fff;border-top:1px solid #eef0f2;display:flex;align-items:center;justify-content:center;padding:12px 26px;text-align:center;font-size:13px;font-weight:650;color:#5f6670}.app{min-height:100vh}.top{height:66px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:10}.brand{font-weight:800;letter-spacing:-.04em;font-size:22px}.brand span{color:var(--accent)}.step{font-size:13px;color:#6b7280}
 .shell{display:grid;grid-template-columns:390px 1fr;min-height:calc(100vh - 66px)}.controls{background:#fff;border-right:1px solid #e5e7eb;padding:24px;overflow:auto}.previewWrap{padding:30px;display:flex;justify-content:center;align-items:flex-start;overflow:auto}
 h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1.45;margin-bottom:22px}.group{margin:0 0 22px}.label{font-size:12px;font-weight:750;margin-bottom:8px;display:block;color:#3f464d}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.input,.select,.textarea{width:100%;border:1px solid #d9dde2;border-radius:10px;padding:11px 12px;background:#fff;outline:none}.input:focus,.select:focus,.textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 15%,transparent)}.textarea{min-height:76px;resize:vertical}
 .langSearch{margin-bottom:8px}.hint{font-size:11px;color:#7a8087;margin-top:6px}.seg{display:flex;gap:8px;flex-wrap:wrap}.seg button{border:1px solid #d9dde2;background:#fff;border-radius:9px;padding:8px 11px;cursor:pointer}.seg button.active{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 16%,transparent)}
@@ -246,7 +246,7 @@ document.getElementById('aiAnswer').addEventListener('keydown',e=>{if(e.key==='E
 
 document.getElementById('paywall').addEventListener('click',e=>{if(e.target.id==='paywall')closePayment()});
 </script>
-</body></html>
+<div class="siteBottomStrip" id="siteBottomMessage">Készítsd el az önéletrajzodat kevesebb mint 1 perc alatt!</div>\n</body></html>
 
 <script>document.getElementById('uiLang').addEventListener('change',()=>setTimeout(refreshCurrency,0));setTimeout(refreshCurrency,0);</script>
 
@@ -409,6 +409,10 @@ const D={"Magyar": {"role": "Szakmai cím", "profile": "Eredményorientált szak
 function p(){ return P[uiLang.value] || P['English (US)']; }
 
 /* Translate every dynamically-added editor control from the same selected language pack. */
+function syncBottomMessageLanguage(){
+ const M={'Magyar':'Készítsd el az önéletrajzodat kevesebb mint 1 perc alatt!','English (US)':'Create your resume in less than 1 minute!','English (UK)':'Create your CV in less than 1 minute!','Deutsch':'Erstelle deinen Lebenslauf in weniger als 1 Minute!','Français':'Créez votre CV en moins d’une minute !','Español':'¡Crea tu CV en menos de 1 minuto!','Italiano':'Crea il tuo CV in meno di 1 minuto!','Português':'Crie o seu CV em menos de 1 minuto!','Nederlands':'Maak je cv in minder dan 1 minuut!','Polski':'Stwórz swoje CV w mniej niż 1 minutę!','Čeština':'Vytvořte si CV za méně než 1 minutu!','Slovenčina':'Vytvorte si CV za menej ako 1 minútu!','Română':'Creează-ți CV-ul în mai puțin de 1 minut!','Hrvatski':'Izradite svoj životopis za manje od 1 minute!','Slovenščina':'Ustvarite svoj življenjepis v manj kot 1 minuti!','Srpski':'Napravite svoj CV za manje od 1 minuta!','Български':'Създайте своето CV за по-малко от 1 минута!','Ελληνικά':'Δημιουργήστε το βιογραφικό σας σε λιγότερο από 1 λεπτό!','Dansk':'Lav dit CV på mindre end 1 minut!','Svenska':'Skapa ditt CV på mindre än 1 minut!','Norsk':'Lag CV-en din på mindre enn 1 minutt!','Suomi':'Luo CV:si alle minuutissa!','Eesti':'Loo oma CV vähem kui 1 minutiga!','Latviešu':'Izveidojiet savu CV mazāk nekā 1 minūtē!','Lietuvių':'Sukurkite savo CV greičiau nei per 1 minutę!','Türkçe':'CV’nizi 1 dakikadan kısa sürede oluşturun!','Українська':'Створіть своє резюме менш ніж за 1 хвилину!','Русский':'Создайте своё резюме менее чем за 1 минуту!','हिन्दी':'अपना CV 1 मिनट से भी कम समय में बनाएं!','中文':'不到 1 分钟即可创建你的简历！','日本語':'1分以内で履歴書を作成！','한국어':'1분 안에 이력서를 만들어 보세요!','العربية':'أنشئ سيرتك الذاتية في أقل من دقيقة!'};
+ const e=document.getElementById('siteBottomMessage');if(e)e.textContent=M[uiLang.value]||M['English (US)'];
+}
 function syncWelcomeLanguage(){
  const M={
  'Magyar':'Jó döntést hoztál, hogy minket választottál!',
@@ -462,7 +466,7 @@ function setAll(){
   if(dd && !role.value) role.placeholder=dd.role||role.placeholder;
   render();
   setTimeout(syncDynamicEditorLanguage,0);
-  syncWelcomeLanguage();
+  syncWelcomeLanguage();\n  syncBottomMessageLanguage();
   document.getElementById('stepLabel').textContent='1 / 2 · '+a[0];
 
   // AI modal auxiliary text
