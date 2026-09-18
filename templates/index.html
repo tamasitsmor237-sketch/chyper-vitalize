@@ -1210,3 +1210,32 @@ document.getElementById('addEducationBtn').onclick=()=>{
  window.refreshCVExamples=refresh;setTimeout(refresh,700);
 })();
 </script>
+<script>
+(function(){
+ const DEMO_FLAG='chyper_demo_preview_v2';
+ function escD(s){return String(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
+ function demoBlock(hid,id,html){
+   const h=document.getElementById(hid),s=h&&h.closest('section');if(!s)return;
+   let d=document.getElementById(id);if(!d){d=document.createElement('div');d.id=id;d.className='cvExample';h.insertAdjacentElement('afterend',d)}
+   d.innerHTML=html;
+ }
+ function showDemo(){
+   // Do not use stale saved test content as the initial preview.
+   if(sessionStorage.getItem(DEMO_FLAG)!=='1'){
+     ['chyper_education_v1','chyper_education_quick','chyper_experience_v1','chyper_experience_ai','chyper_languages_v1'].forEach(k=>localStorage.removeItem(k));
+     sessionStorage.setItem(DEMO_FLAG,'1');
+   }
+   const p=document.getElementById('pProfile');if(p&&!document.getElementById('profile')?.value)p.textContent='Motivált, megbízható pályakezdő, aki gyorsan tanul és szívesen dolgozik csapatban.';
+   const sk=document.getElementById('pSkills');if(sk&&!document.getElementById('skills')?.value)sk.innerHTML='<li>Kommunikáció</li><li>Csapatmunka</li><li>Microsoft Office</li>';
+   const la=document.getElementById('pLanguages');if(la&&!document.getElementById('languages')?.value)la.innerHTML='Magyar — anyanyelvi<br>Angol — középfok';
+   demoBlock('expHeading','demoExperience','<b>Csapattag</b><div>McDonald’s · Budapest</div><div>2024 – 2025</div><div>Vendégek kiszolgálása és csapatmunka.</div>');
+   demoBlock('eduHeading','demoEducation','<b>Harvard University</b><div>Business Administration</div><div>Cambridge, MA · 2021 – 2025</div>');
+ }
+ function removeDemoFor(id){
+   const map={profile:null,skills:null,languages:null,eduSchool:'demoEducation',eduDegree:'demoEducation',eduLocation:'demoEducation',eduStart:'demoEducation',eduEnd:'demoEducation',eduDescription:'demoEducation',expRoleInput:'demoExperience',expCompanyInput:'demoExperience',expLocationInput:'demoExperience',expStartInput:'demoExperience',expEndInput:'demoExperience',expDescriptionInput:'demoExperience'};
+   if(!(id in map))return;const did=map[id];if(did)document.getElementById(did)?.remove();
+ }
+ document.addEventListener('input',e=>removeDemoFor(e.target?.id));
+ setTimeout(showDemo,850);
+})();
+</script>
