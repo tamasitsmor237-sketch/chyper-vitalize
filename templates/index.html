@@ -1250,6 +1250,7 @@ document.getElementById('addEducationBtn').onclick=()=>{
    const pl=document.getElementById('pLanguages');if(pl&&empty('languages'))pl.innerHTML=x.langs.join('<br>');
  }
  document.addEventListener('change',e=>{if(e.target?.tagName==='SELECT')setTimeout(sync,60)});
+ const ui=document.getElementById('uiLang');if(ui)ui.addEventListener('change',()=>setTimeout(sync,80));
  window.syncCVExampleLanguage=sync;setTimeout(sync,1100);
 })();
 </script>
