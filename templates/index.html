@@ -1362,9 +1362,9 @@ document.getElementById('addEducationBtn').onclick=()=>{
    if(activeRecognition){try{activeRecognition.abort()}catch(e){}}
    const rec=new SR();activeRecognition=rec;rec.lang='en-US';rec.interimResults=true;rec.continuous=false;
    let finalText='';$('voicePulse').classList.add('on');$('interviewStatus').textContent='Hallgatlak…';
-   rec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=t+' ';else interim+=t}$('interviewAnswer').value=(finalText+interim).trim()};
+   rec.onresult=e=>{let interim='';for(let i=0;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=t+' ';else interim+=t}const heard=(finalText+interim).trim();$('interviewAnswer').value=heard;if(heard)$('interviewStatus').textContent='🎙️ Hallom: '+heard};
    rec.onerror=e=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(e.error!=='aborted')$('interviewStatus').textContent='Nem sikerült felismerni a hangot. Nyomd meg a mikrofont vagy válaszolj írásban.'};
-   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');const a=$('interviewAnswer').value.trim();if(a&&mode==='voice'&&!voiceClosing&&!questionBusy){$('interviewStatus').textContent='Válasz feldolgozása…';nextQuestion(a)}else if(mode==='voice'&&!voiceClosing)$('interviewStatus').textContent='Nem hallottam választ. Nyomd meg a mikrofont az újrapróbáláshoz.'};
+   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');const a=$('interviewAnswer').value.trim();if(a&&mode==='voice'&&!voiceClosing&&!questionBusy){$('interviewStatus').textContent='Válasz feldolgozása…';nextQuestion(a)}else if(mode==='voice'&&!voiceClosing)$('interviewStatus').textContent='Nem hallottam választ. Ellenőrizd a böngésző mikrofonengedélyét, majd nyomd meg a mikrofont.'};
    try{rec.start()}catch(e){$('interviewStatus').textContent='A mikrofon nem indítható el.'}
  }
  async function nextQuestion(answer){
