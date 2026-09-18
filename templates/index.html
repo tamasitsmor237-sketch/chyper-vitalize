@@ -71,7 +71,7 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
     <div class="group"><label class="label">Díszléc színe</label><div class="swatches" id="swatches"></div><div class="colorLine"><input type="color" class="colorPicker" id="picker" value="#2f6f8f"><input class="input" id="hex" value="#2F6F8F" maxlength="7"></div><div class="hint">Csak a díszítőelemek kapják ezt a színt. A háttér ivory, a szöveg sötét marad.</div></div>
     <div class="group"><label class="label">Szakmai profil</label><textarea class="textarea" id="profile"></textarea></div>
     <div class="group"><label class="label">Készségek</label><textarea class="textarea" id="skills"></textarea></div>
-    <span id="aiStartText" style="display:none" aria-hidden="true"></span><button class="primary" id="downloadBtn" onclick="openPayment()"><span id="downloadPayText">CV letöltése · Fizetés</span></button><button class="primary downloadUnlocked" id="unlockedBtn" onclick="downloadPDF()"><span id="pdfText">PDF letöltése</span></button><button class="secondary" onclick="go(2)"><span id="changeCvLangText">← CV nyelvének módosítása</span></button><div class="hint" style="margin-top:10px">A CV szerkesztése és előnézete ingyenes. Fizetni csak a végleges <span id="pdfText">PDF letöltése</span>kor kell.</div>
+    <span id="aiStartText" style="display:none" aria-hidden="true"></span><button class="primary" id="downloadBtn" onclick="openPayment()"><span id="downloadPayText">CV letöltése · Fizetés</span></button><button class="primary downloadUnlocked" id="unlockedBtn" onclick="downloadPDF()"><span id="pdfText">PDF letöltése</span></button><button class="secondary" onclick="go(2)"><span id="changeCvLangText">← CV nyelvének módosítása</span></button><div class="hint" style="margin-top:10px">A CV szerkesztése és előnézete ingyenes. Fizetni csak a végleges <span class="pdfTextMirror">PDF letöltése</span>kor kell.</div>
    </section>
   </aside>
   <main class="previewWrap">
@@ -121,7 +121,7 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
 <button class="secondary" id="applyRefCodeBtn" type="button" style="margin:0;width:auto;padding:10px 14px">Apply</button>
 </div>
 <div id="refCodeStatus" style="font-size:12px;margin-top:6px"></div><div class="discount" id="discountMsg">✓ 50% kedvezmény aktiválva</div></div>
-  <div class="success" id="paySuccess">✓ Sikeres próba-fizetés. A <span id="pdfText">PDF letöltése</span> feloldva.</div>
+  <div class="success" id="paySuccess">✓ Sikeres próba-fizetés. A <span class="pdfTextMirror">PDF letöltése</span> feloldva.</div>
   <button class="primary" id="demoPay" onclick="completePayment()"><span id="demoPayText">Próba-fizetés</span> · <span id="buttonPrice">€3.99</span></button>
   <button class="secondary" onclick="closePayment()">Még szerkesztem</button>
   <div class="payfine">Prototípus: ez még nem terhel valódi bankkártyát. Az éles verzióban ide kerül a valódi fizetési szolgáltató.</div>
@@ -1370,6 +1370,7 @@ document.getElementById('addEducationBtn').onclick=()=>{
  };
  function code(){const e=document.getElementById('uiLang');const v=(e?.value||e?.selectedOptions?.[0]?.textContent||'en').toLowerCase();for(const k of ['hu','de','fr','es','it','pt','nl'])if(v.startsWith(k)||v.includes(k))return k;return'en'}
  function sync(){const x=T[code()]||T.en,room=document.getElementById('mockInterviewRoom');const ids=['interviewOfferTitle','interviewOfferText','startInterviewOffer','skipInterviewOffer','interviewRoomTitle'];ids.forEach((id,i)=>{const e=document.getElementById(id);if(e)e.textContent=x[i]});if(room){const lead=room.querySelector('.interviewLead');if(lead)lead.textContent=x[5]}const q=document.getElementById('interviewQuestion');if(q&&!/^\d+\./.test(q.textContent))q.textContent=x[6];const a=document.getElementById('interviewAnswer');if(a)a.placeholder=x[7];const s=document.getElementById('sendInterviewAnswer');if(s)s.textContent=x[8]}
- document.addEventListener('change',e=>{if(e.target?.id==='uiLang')setTimeout(sync,20)});setTimeout(sync,300);
+ function mirror(){const src=document.getElementById('pdfText');if(src)document.querySelectorAll('.pdfTextMirror').forEach(e=>e.textContent=src.textContent)}
+ document.addEventListener('change',e=>{if(e.target?.id==='uiLang')setTimeout(()=>{sync();mirror()},20)});setTimeout(()=>{sync();mirror()},300);
 })();
 </script>
