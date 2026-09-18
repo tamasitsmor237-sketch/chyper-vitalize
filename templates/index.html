@@ -1356,7 +1356,8 @@ document.getElementById('addEducationBtn').onclick=()=>{
  }
  function closeRoom(){voiceClosing=true;$('mockInterviewRoom').classList.remove('open');if(activeRecognition){try{activeRecognition.abort()}catch(e){}activeRecognition=null}if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}}
  async function startVoiceListening(){
-   if(mode!=='voice'||voiceClosing||questionBusy)return;
+   if(mode!=='voice'||voiceClosing)return;
+   if(questionBusy){$('interviewStatus').textContent='Az AI még készíti a kérdést…';return;}
    $('interviewStatus').textContent='Mikrofon indítása…';
    try{
      if(!navigator.mediaDevices?.getUserMedia)throw new Error('no-media');
@@ -1373,9 +1374,9 @@ document.getElementById('addEducationBtn').onclick=()=>{
      const answer=transcript.trim();
      if(!answer)return;
      submitted=true;activeRecognition=null;rec.onend=null;
-     try{rec.stop()}catch(e){}
      $('voicePulse').classList.remove('on');$('interviewStatus').textContent='Válasz feldolgozása…';
-     nextQuestion(answer);
+     try{rec.stop()}catch(e){}
+     setTimeout(()=>nextQuestion(answer),120);
    };
    rec.onstart=()=>{$('voicePulse').classList.add('on');$('interviewStatus').textContent='🎙️ Hallgatlak…'};
    rec.onspeechstart=()=>{$('interviewStatus').textContent='🎙️ Hallom a hangodat…'};
