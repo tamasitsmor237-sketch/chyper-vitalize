@@ -1154,9 +1154,8 @@ document.getElementById('addEducationBtn').onclick=()=>{
    d.innerHTML=html;
  }
  function showDemo(){
-   // Do not use stale saved test content as the initial preview.
+   // Demo content is visual-only. Never delete the user's saved CV data here.
    if(sessionStorage.getItem(DEMO_FLAG)!=='1'){
-     ['chyper_education_v1','chyper_education_quick','chyper_experience_v1','chyper_experience_ai','chyper_languages_v1'].forEach(k=>localStorage.removeItem(k));
      sessionStorage.setItem(DEMO_FLAG,'1');
    }
    const p=document.getElementById('pProfile');if(p&&!document.getElementById('profile')?.value)p.textContent='Motivált, megbízható pályakezdő, aki gyorsan tanul és szívesen dolgozik csapatban.';
