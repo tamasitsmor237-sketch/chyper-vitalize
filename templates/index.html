@@ -35,6 +35,13 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
    ['chyper_education_v1','chyper_education_quick','chyper_experience_v1','chyper_experience_ai','chyper_languages_v1','chyper_cv_checkout_state_v1','chyper_cv_full_state_v2','chyper_cv_full_state_v3'].forEach(k=>localStorage.removeItem(k));
    localStorage.setItem(V,'1');
  }
+ // A genuinely new browser-tab session starts as a fresh CV.
+ // Stripe return is excluded so the paid CV can still be restored.
+ const q=new URLSearchParams(location.search);
+ if(!sessionStorage.getItem('chyper_active_cv_session') && q.get('payment')!=='success'){
+   ['chyper_education_v1','chyper_education_quick','chyper_experience_v1','chyper_experience_ai','chyper_languages_v1','chyper_cv_checkout_state_v1','chyper_cv_full_state_v2','chyper_cv_full_state_v3'].forEach(k=>localStorage.removeItem(k));
+   sessionStorage.setItem('chyper_active_cv_session','1');
+ }
 })();
 </script></head>
 <body>
