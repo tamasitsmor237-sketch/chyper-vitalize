@@ -1311,7 +1311,7 @@ document.getElementById('addEducationBtn').onclick=()=>{
 <script>
 (function(){
  const $=id=>document.getElementById(id), history=[];
- let mode='text', interviewStyle='professional', currentQuestion='';
+ let mode='text', interviewStyle='professional', currentQuestion='',activeRecognition=null,voiceClosing=false;
  function val(id){return $(id)?.value||''}
  function cvData(){return {role:val('role'),profile:val('profile'),skills:val('skills'),experience:localStorage.getItem('chyper_experience_ai')||localStorage.getItem('chyper_experience_v1')||'',education:localStorage.getItem('chyper_education_quick')||localStorage.getItem('chyper_education_v1')||'',languages:localStorage.getItem('chyper_languages_v1')||val('languages')}}
  function lang(){const e=$('uiLang');return e?.selectedOptions?.[0]?.textContent||e?.value||'English'}
@@ -1349,12 +1349,24 @@ document.getElementById('addEducationBtn').onclick=()=>{
      }
      if(!blob)throw new Error('Unsupported Kokoro audio output');
      const url=URL.createObjectURL(blob);kokoroAudio=new Audio(url);
-     kokoroAudio.onended=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent=''};
+     kokoroAudio.onended=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent='';if(mode==='voice'&&!voiceClosing)startVoiceListening()};
      kokoroAudio.onerror=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent=''};
      await kokoroAudio.play();
    }catch(e){console.error('Kokoro voice error',e);$('interviewStatus').textContent='A természetes angol hang most nem tölthető be. Az interjú írásban továbbra is működik.'}
  }
- function closeRoom(){$('mockInterviewRoom').classList.remove('open');if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}}
+ function closeRoom(){voiceClosing=true;$('mockInterviewRoom').classList.remove('open');if(activeRecognition){try{activeRecognition.abort()}catch(e){}activeRecognition=null}if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}}
+ function startVoiceListening(){
+   if(mode!=='voice'||voiceClosing)return;
+   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+   if(!SR){$('interviewStatus').textContent='A böngésződben a hangfelismerés nem érhető el. Írásban továbbra is válaszolhatsz.';return}
+   if(activeRecognition){try{activeRecognition.abort()}catch(e){}}
+   const rec=new SR();activeRecognition=rec;rec.lang='en-US';rec.interimResults=true;rec.continuous=false;
+   let finalText='';$('voicePulse').classList.add('on');$('interviewStatus').textContent='Hallgatlak…';
+   rec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=t+' ';else interim+=t}$('interviewAnswer').value=(finalText+interim).trim()};
+   rec.onerror=e=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(e.error!=='aborted')$('interviewStatus').textContent='Nem sikerült felismerni a hangot. Nyomd meg a mikrofont vagy válaszolj írásban.'};
+   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');const a=$('interviewAnswer').value.trim();if(a&&mode==='voice'&&!voiceClosing){$('interviewStatus').textContent='Válasz feldolgozása…';nextQuestion(a)}else if(mode==='voice'&&!voiceClosing)$('interviewStatus').textContent='Nem hallottam választ. Nyomd meg a mikrofont az újrapróbáláshoz.'};
+   try{rec.start()}catch(e){$('interviewStatus').textContent='A mikrofon nem indítható el.'}
+ }
  async function nextQuestion(answer){
    if(currentQuestion&&answer)history.push({question:currentQuestion,answer});
    $('interviewStatus').textContent='AI kérdés készítése…';$('sendInterviewAnswer').disabled=true;
@@ -1366,19 +1378,13 @@ document.getElementById('addEducationBtn').onclick=()=>{
    }catch(e){$('interviewStatus').textContent='Az interjú most nem tudta elkészíteni a következő kérdést. Próbáld újra.'}
    finally{$('sendInterviewAnswer').disabled=false}
  }
- function start(m){mode=m;$('interviewModeChoices').style.display='none';$('interviewStylePicker').style.display='none';$('interviewModePrompt').style.display='none';$('interviewSession').style.display='block';$('speakInterviewAnswer').style.display=m==='voice'?'inline-block':'none';nextQuestion('')}
+ function start(m){voiceClosing=false;mode=m;$('interviewModeChoices').style.display='none';$('interviewStylePicker').style.display='none';$('interviewModePrompt').style.display='none';$('interviewSession').style.display='block';$('speakInterviewAnswer').style.display=m==='voice'?'inline-block':'none';nextQuestion('')}
  function begin(){closeOffer();$('mockInterviewRoom').classList.add('open')}
  $('startInterviewOffer').onclick=begin;$('skipInterviewOffer').onclick=closeOffer;document.querySelector('[data-close-offer]').onclick=closeOffer;document.querySelector('[data-close-room]').onclick=closeRoom;
  document.querySelectorAll('#interviewStylePicker [data-style]').forEach(b=>b.onclick=()=>{document.querySelectorAll('#interviewStylePicker [data-style]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');interviewStyle=b.dataset.style});
  $('textInterviewMode').onclick=()=>start('text');$('voiceInterviewMode').onclick=()=>start('voice');
  $('sendInterviewAnswer').onclick=()=>{const a=$('interviewAnswer').value.trim();if(a)nextQuestion(a)};
  $('interviewAnswer').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const a=e.target.value.trim();if(a)nextQuestion(a)}});
- $('speakInterviewAnswer').onclick=()=>{
-   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('interviewStatus').textContent='A böngésződben a hangfelismerés nem érhető el. Írásban továbbra is válaszolhatsz.';return}
-   const rec=new SR();const htmlLang=document.documentElement.lang;if(htmlLang)rec.lang=htmlLang;rec.interimResults=true;$('voicePulse').classList.add('on');
-   rec.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;$('interviewAnswer').value=t};
-   rec.onerror=()=>{$('voicePulse').classList.remove('on');$('interviewStatus').textContent='Nem sikerült felismerni a hangot. Próbáld újra vagy válaszolj írásban.'};
-   rec.onend=()=>{$('voicePulse').classList.remove('on')};rec.start();
- };
+ $('speakInterviewAnswer').onclick=startVoiceListening;
 })();
 </script>
