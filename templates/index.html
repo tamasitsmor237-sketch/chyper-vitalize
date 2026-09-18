@@ -1169,4 +1169,8 @@ document.getElementById('addEducationBtn').onclick=()=>{
  document.addEventListener('click',e=>{if(e.target?.id==='addEducationBtn'||e.target?.closest?.('#educationList button'))setTimeout(showApprovedEducation,20)});
  setTimeout(showApprovedEducation,600);
 })();
-</script>
+</script><style>
+/* Keep Education typography consistent with the rest of the CV. */
+#educationApprovedPreview,#educationPreview,#educationCanonicalPreview,#structuredEducationPreview,#pEducationDraft,#pEducationAI{font-size:12px;line-height:1.45;font-weight:400}
+#educationApprovedPreview b,#educationPreview b,#educationCanonicalPreview b,#structuredEducationPreview b{font-size:12px;line-height:1.45;font-weight:600}
+</style>
