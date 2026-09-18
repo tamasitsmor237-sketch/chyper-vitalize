@@ -189,7 +189,8 @@ async function downloadPDF(){
     const shot=await html2canvas(cv,{scale:2,useCORS:true,backgroundColor:'#fbf8ef',logging:false});
     const image=shot.toDataURL('image/jpeg',0.96);
     const name=(document.getElementById('name')?.value||'CV').trim();
-    const res=await fetch('/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,name})});
+    const sessionId=localStorage.getItem('chyper_paid_session_id')||new URLSearchParams(location.search).get('session_id')||'';
+    const res=await fetch('/api/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image,name,session_id:sessionId})});
     if(!res.ok) throw new Error('PDF server error');
     const blob=await res.blob(), url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download='Chyper_Vitalize_'+(name||'CV').replace(/[^A-Za-z0-9_-]+/g,'_')+'.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),3000);
   }catch(e){alert('A PDF letöltése nem sikerült. Kérlek próbáld újra.');}
@@ -638,7 +639,7 @@ setAll();
  async function paidReturn(){
   const q=new URLSearchParams(location.search), sid=q.get('session_id'); if(q.get('payment')!=='success'||!sid)return;
   try{
-   const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(sid));const d=await r.json();if(!r.ok||!d.paid)return;
+   const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(sid));const d=await r.json();if(!r.ok||!d.paid)return;localStorage.setItem('chyper_paid_session_id',sid);
    hydrate(); if(typeof go==='function')go(3); hydrate();
    window.paid=true;
    document.getElementById('downloadBtn').style.display='none';document.getElementById('unlockedBtn').style.display='block';
@@ -684,7 +685,7 @@ setAll();
  if(q.get('payment')!=='success'||!sid)return;
  const css=document.createElement('style');css.textContent='.stripe-paid-return #paywall{display:none!important}.stripe-paid-return #unlockedBtn{display:block!important;position:fixed!important;left:50%!important;bottom:28px!important;transform:translateX(-50%)!important;width:min(420px,calc(100vw - 32px))!important;z-index:9999!important;padding:16px 20px!important;font-size:18px!important;box-shadow:0 12px 40px rgba(0,0,0,.22)!important}';document.head.appendChild(css);
  async function finish(){
-  try{const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(sid));const d=await r.json();if(!r.ok||!d.paid)return;
+  try{const r=await fetch('/api/payment-status?session_id='+encodeURIComponent(sid));const d=await r.json();if(!r.ok||!d.paid)return;localStorage.setItem('chyper_paid_session_id',sid);
    document.documentElement.classList.add('stripe-paid-return');
    const w=document.getElementById('paywall');if(w)w.classList.remove('open');
    if(typeof go==='function')go(3);
