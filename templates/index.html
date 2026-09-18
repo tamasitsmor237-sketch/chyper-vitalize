@@ -1341,3 +1341,35 @@ document.getElementById('addEducationBtn').onclick=()=>{
  $('interviewAnswer').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();const a=e.target.value.trim();if(a&&!questionBusy)nextQuestion(a)}});
 })();
 </script>
+
+<style>
+/* Final mobile/UX polish */
+@media(max-width:650px){
+ .siteLogoStrip{grid-template-columns:26px 1fr 26px;padding:0 12px}.siteWelcome{font-size:11px;line-height:1.25}
+ .top{height:58px;padding:0 14px}.brand{font-size:19px}.step{font-size:11px}
+ .controls{padding:18px 14px}.previewWrap{padding:14px 8px 22px}
+ .row,.colorLine{grid-template-columns:1fr}.input,.select,.textarea,.primary,.secondary{min-height:46px;font-size:16px}
+ .seg button{min-height:44px}.swatch{width:32px;height:32px}
+ .paywall,#interviewOffer,#mockInterviewRoom{padding:12px;align-items:flex-end}
+ .paycard,.interviewCard{max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:20px 16px}
+ .interviewAnswer{min-height:130px;font-size:16px}
+}
+</style>
+<script>
+/* Localize the final written mock-interview UI without changing interview logic. */
+(function(){
+ const T={
+ hu:['Készülj fel az állásinterjúra is!','A CV-d alapján személyre szabott próba-interjút készítünk, hogy magabiztosabban érkezz az állásinterjúra.','Próbáld ki az interjút','Most nem','Próba állásinterjú','Válaszolj írásban úgy, mintha egy valódi állásinterjún lennél.','Az interjúztató készíti a kérdést…','Írd ide a válaszodat…','Válasz elküldése'],
+ en:['Prepare for your job interview too!','Get a personalized mock interview based on your CV so you can arrive better prepared.','Try the interview','Not now','Mock job interview','Answer in writing as if you were in a real job interview.','Preparing your interview question…','Type your answer here…','Send answer'],
+ de:['Bereite dich auch auf dein Vorstellungsgespräch vor!','Erhalte ein persönliches Probeinterview auf Basis deines Lebenslaufs.','Interview ausprobieren','Nicht jetzt','Probevorstellungsgespräch','Antworte schriftlich, als wärst du in einem echten Vorstellungsgespräch.','Die nächste Frage wird vorbereitet…','Schreibe deine Antwort hier…','Antwort senden'],
+ fr:['Préparez aussi votre entretien !','Obtenez un entretien blanc personnalisé à partir de votre CV.','Essayer l’entretien','Pas maintenant','Entretien blanc','Répondez par écrit comme lors d’un véritable entretien.','Préparation de la question…','Écrivez votre réponse ici…','Envoyer la réponse'],
+ es:['¡Prepárate también para la entrevista!','Practica con una entrevista personalizada basada en tu CV.','Probar la entrevista','Ahora no','Entrevista de práctica','Responde por escrito como si estuvieras en una entrevista real.','Preparando la pregunta…','Escribe tu respuesta aquí…','Enviar respuesta'],
+ it:['Preparati anche al colloquio!','Esercitati con un colloquio personalizzato basato sul tuo CV.','Prova il colloquio','Non ora','Colloquio di prova','Rispondi per iscritto come in un vero colloquio di lavoro.','Preparazione della domanda…','Scrivi qui la tua risposta…','Invia risposta'],
+ pt:['Prepare-se também para a entrevista!','Pratique com uma entrevista personalizada com base no seu CV.','Experimentar entrevista','Agora não','Entrevista de prática','Responda por escrito como se estivesse numa entrevista real.','A preparar a pergunta…','Escreva a sua resposta aqui…','Enviar resposta'],
+ nl:['Bereid je ook voor op je sollicitatiegesprek!','Oefen met een persoonlijk gesprek op basis van je cv.','Interview proberen','Niet nu','Oefensollicitatie','Antwoord schriftelijk alsof je in een echt sollicitatiegesprek zit.','Vraag wordt voorbereid…','Typ hier je antwoord…','Antwoord versturen']
+ };
+ function code(){const e=document.getElementById('uiLang');const v=(e?.value||e?.selectedOptions?.[0]?.textContent||'en').toLowerCase();for(const k of ['hu','de','fr','es','it','pt','nl'])if(v.startsWith(k)||v.includes(k))return k;return'en'}
+ function sync(){const x=T[code()]||T.en,room=document.getElementById('mockInterviewRoom');const ids=['interviewOfferTitle','interviewOfferText','startInterviewOffer','skipInterviewOffer','interviewRoomTitle'];ids.forEach((id,i)=>{const e=document.getElementById(id);if(e)e.textContent=x[i]});if(room){const lead=room.querySelector('.interviewLead');if(lead)lead.textContent=x[5]}const q=document.getElementById('interviewQuestion');if(q&&!/^\d+\./.test(q.textContent))q.textContent=x[6];const a=document.getElementById('interviewAnswer');if(a)a.placeholder=x[7];const s=document.getElementById('sendInterviewAnswer');if(s)s.textContent=x[8]}
+ document.addEventListener('change',e=>{if(e.target?.id==='uiLang')setTimeout(sync,20)});setTimeout(sync,300);
+})();
+</script>
