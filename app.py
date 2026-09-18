@@ -73,6 +73,18 @@ def payment_status():
 @app.post('/api/pdf')
 def pdf():
     data = request.get_json(silent=True) or {}
+    session_id = str(data.get('session_id') or '').strip()
+    secret_key = os.environ.get('STRIPE_SECRET_KEY')
+    if not secret_key or not session_id:
+        return jsonify(error='payment required'), 402
+    stripe.api_key = secret_key
+    try:
+        checkout = stripe.checkout.Session.retrieve(session_id)
+        if checkout.payment_status != 'paid' or checkout.mode != 'payment':
+            return jsonify(error='payment required'), 402
+    except Exception:
+        return jsonify(error='payment verification failed'), 402
+
     image = data.get('image', '')
     if not image.startswith('data:image/') or ',' not in image:
         return jsonify(error='missing image'), 400
