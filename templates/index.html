@@ -194,6 +194,7 @@ async function downloadPDF(){
     const blob=await res.blob(), url=URL.createObjectURL(blob), a=document.createElement('a'); a.href=url; a.download='Chyper_Vitalize_'+(name||'CV').replace(/[^A-Za-z0-9_-]+/g,'_')+'.pdf'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),3000);
   }catch(e){alert('A PDF letöltése nem sikerült. Kérlek próbáld újra.');}
   finally{btn.disabled=false;btn.innerHTML=old;}
+  if(typeof window.offerMockInterview==='function')setTimeout(window.offerMockInterview,700);
 }
 
 function makeTextPdf(win,finish){
@@ -1296,5 +1297,50 @@ document.getElementById('addEducationBtn').onclick=()=>{
  document.addEventListener('input',e=>{if(e.target?.id==='languages')setTimeout(render,20)});
  document.addEventListener('change',e=>{if(e.target?.tagName==='SELECT')setTimeout(render,80)});
  window.renderLanguageStrengthSliders=render;setTimeout(render,1200);
+})();
+</script>
+
+<style>
+#interviewOffer,#mockInterviewRoom{position:fixed;inset:0;background:rgba(17,24,39,.62);backdrop-filter:blur(9px);z-index:12000;display:none;align-items:center;justify-content:center;padding:20px}
+#interviewOffer.open,#mockInterviewRoom.open{display:flex}.interviewCard{width:min(620px,100%);max-height:90vh;overflow:auto;background:#fffdf8;border:1px solid rgba(0,0,0,.08);border-radius:24px;padding:28px;box-shadow:0 30px 90px rgba(0,0,0,.28)}
+.interviewCard h2{margin:0 0 10px}.interviewLead{color:#60656d;line-height:1.6}.interviewChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.interviewChoices button{padding:14px}.interviewQuestion{font-size:20px;font-weight:700;line-height:1.45;background:#f5f1e8;border-radius:16px;padding:18px;margin:16px 0}.interviewAnswer{width:100%;min-height:110px;padding:13px;border:1px solid #d8d4cb;border-radius:13px;font:inherit;resize:vertical}.interviewMeta{font-size:12px;color:#777;margin-top:8px}.interviewActions{display:flex;gap:9px;margin-top:12px}.interviewActions button{width:auto}.voicePulse{display:none;margin:12px 0;font-weight:700}.voicePulse.on{display:block}.interviewClose{float:right;border:0;background:transparent;font-size:25px;cursor:pointer}
+@media(max-width:600px){.interviewChoices{grid-template-columns:1fr}.interviewCard{padding:20px}.interviewQuestion{font-size:18px}}
+</style>
+<div id="interviewOffer"><div class="interviewCard"><button class="interviewClose" type="button" data-close-offer>×</button><h2 id="interviewOfferTitle">Készülj fel az állásinterjúra is!</h2><p class="interviewLead" id="interviewOfferText">A CV-d alapján személyre szabott próba-interjút készítünk, hogy magabiztosabban érkezz az állásinterjúra.</p><button class="primary" id="startInterviewOffer" type="button">Próbáld ki az interjút</button><button class="secondary" id="skipInterviewOffer" type="button" style="margin-top:8px">Most nem</button></div></div>
+<div id="mockInterviewRoom"><div class="interviewCard"><button class="interviewClose" type="button" data-close-room>×</button><h2 id="interviewRoomTitle">Próba állásinterjú</h2><p class="interviewLead" id="interviewModePrompt">Hogyan szeretnéd gyakorolni?</p><div class="interviewChoices" id="interviewModeChoices"><button class="primary" id="textInterviewMode" type="button">💬 Írásban</button><button class="primary" id="voiceInterviewMode" type="button">🎙️ Voice interjú</button></div><div id="interviewSession" style="display:none"><div class="interviewQuestion" id="interviewQuestion">Interjú indítása…</div><div class="voicePulse" id="voicePulse">🎙️ Hallgatlak…</div><textarea class="interviewAnswer" id="interviewAnswer" placeholder="Írd ide a válaszodat…"></textarea><div class="interviewActions"><button class="primary" id="sendInterviewAnswer" type="button">Válasz elküldése</button><button class="secondary" id="speakInterviewAnswer" type="button" style="display:none">🎙️ Válasz szóban</button></div><div class="interviewMeta" id="interviewStatus"></div></div></div></div>
+<script>
+(function(){
+ const $=id=>document.getElementById(id), history=[];
+ let mode='text', currentQuestion='';
+ function val(id){return $(id)?.value||''}
+ function cvData(){return {role:val('role'),profile:val('profile'),skills:val('skills'),experience:localStorage.getItem('chyper_experience_ai')||localStorage.getItem('chyper_experience_v1')||'',education:localStorage.getItem('chyper_education_quick')||localStorage.getItem('chyper_education_v1')||'',languages:localStorage.getItem('chyper_languages_v1')||val('languages')}}
+ function lang(){const e=$('uiLang');return e?.selectedOptions?.[0]?.textContent||e?.value||'English'}
+ window.offerMockInterview=function(){$('interviewOffer').classList.add('open')}
+ function closeOffer(){$('interviewOffer').classList.remove('open')}
+ function closeRoom(){$('mockInterviewRoom').classList.remove('open');if('speechSynthesis'in window)speechSynthesis.cancel()}
+ async function nextQuestion(answer){
+   if(currentQuestion&&answer)history.push({question:currentQuestion,answer});
+   $('interviewStatus').textContent='AI kérdés készítése…';$('sendInterviewAnswer').disabled=true;
+   try{
+    const r=await fetch('/api/mock-interview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cv:cvData(),history,language:lang()})});
+    const d=await r.json();if(!r.ok||!d.question)throw new Error();
+    currentQuestion=d.question;$('interviewQuestion').textContent=currentQuestion;$('interviewAnswer').value='';$('interviewStatus').textContent='';
+    if(mode==='voice'&&'speechSynthesis'in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(currentQuestion);const htmlLang=document.documentElement.lang;if(htmlLang)u.lang=htmlLang;speechSynthesis.speak(u)}
+   }catch(e){$('interviewStatus').textContent='Az interjú most nem tudta elkészíteni a következő kérdést. Próbáld újra.'}
+   finally{$('sendInterviewAnswer').disabled=false}
+ }
+ function start(m){mode=m;$('interviewModeChoices').style.display='none';$('interviewModePrompt').style.display='none';$('interviewSession').style.display='block';$('speakInterviewAnswer').style.display=m==='voice'?'inline-block':'none';nextQuestion('')}
+ function begin(){closeOffer();$('mockInterviewRoom').classList.add('open')}
+ $('startInterviewOffer').onclick=begin;$('skipInterviewOffer').onclick=closeOffer;document.querySelector('[data-close-offer]').onclick=closeOffer;document.querySelector('[data-close-room]').onclick=closeRoom;
+ $('textInterviewMode').onclick=()=>start('text');$('voiceInterviewMode').onclick=()=>start('voice');
+ $('sendInterviewAnswer').onclick=()=>{const a=$('interviewAnswer').value.trim();if(a)nextQuestion(a)};
+ $('interviewAnswer').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const a=e.target.value.trim();if(a)nextQuestion(a)}});
+ $('speakInterviewAnswer').onclick=()=>{
+   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){$('interviewStatus').textContent='A böngésződben a hangfelismerés nem érhető el. Írásban továbbra is válaszolhatsz.';return}
+   const rec=new SR();const htmlLang=document.documentElement.lang;if(htmlLang)rec.lang=htmlLang;rec.interimResults=true;$('voicePulse').classList.add('on');
+   rec.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;$('interviewAnswer').value=t};
+   rec.onerror=()=>{$('voicePulse').classList.remove('on');$('interviewStatus').textContent='Nem sikerült felismerni a hangot. Próbáld újra vagy válaszolj írásban.'};
+   rec.onend=()=>{$('voicePulse').classList.remove('on')};rec.start();
+ };
 })();
 </script>
