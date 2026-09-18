@@ -1164,12 +1164,21 @@ document.getElementById('addEducationBtn').onclick=()=>{
    demoBlock('expHeading','demoExperience','<b>Csapattag</b><div>McDonald’s · Budapest</div><div>2024 – 2025</div><div>Vendégek kiszolgálása és csapatmunka.</div>');
    demoBlock('eduHeading','demoEducation','<b>Harvard University</b><div>Business Administration</div><div>Cambridge, MA · 2021 – 2025</div>');
  }
+ function removeAllDemo(){
+   ['demoExperience','demoEducation','exampleExperience','exampleEducation','exampleSkills','exampleLanguages','exampleProfile'].forEach(id=>document.getElementById(id)?.remove());
+ }
+ function userHasRealData(){
+   const basic=['name','role','email','phone','place','profile','skills','languages'].some(id=>(document.getElementById(id)?.value||'').trim());
+   let edu=[],exp=[];try{edu=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){}try{exp=JSON.parse(localStorage.getItem('chyper_experience_v1')||'[]')}catch(e){}
+   return basic||edu.length>0||exp.length>0;
+ }
  function removeDemoFor(id){
-   const map={profile:null,skills:null,languages:null,eduSchool:'demoEducation',eduDegree:'demoEducation',eduLocation:'demoEducation',eduStart:'demoEducation',eduEnd:'demoEducation',eduDescription:'demoEducation',expRoleInput:'demoExperience',expCompanyInput:'demoExperience',expLocationInput:'demoExperience',expStartInput:'demoExperience',expEndInput:'demoExperience',expDescriptionInput:'demoExperience'};
-   if(!(id in map))return;const did=map[id];if(did)document.getElementById(did)?.remove();
+   const userFields=['name','role','email','phone','place','profile','skills','languages','eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription','expRoleInput','expCompanyInput','expLocationInput','expStartInput','expEndInput','expDescriptionInput'];
+   if(userFields.includes(id))removeAllDemo();
  }
  document.addEventListener('input',e=>removeDemoFor(e.target?.id));
- setTimeout(showDemo,850);
+ document.addEventListener('change',e=>removeDemoFor(e.target?.id));
+ setTimeout(()=>{if(userHasRealData())removeAllDemo();else showDemo()},850);
 })();
 </script>
 <script>
