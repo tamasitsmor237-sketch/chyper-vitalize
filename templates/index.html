@@ -1046,3 +1046,47 @@ document.getElementById('addEducationBtn').onclick=()=>{
  window.syncStructuredEducation=syncStructuredEducation;
 })();
 </script>
+
+<script>
+(function(){
+ const ids=['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'];
+ const val=id=>(document.getElementById(id)?.value||'').trim();
+ function saved(){
+   try{return JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){return []}
+ }
+ function draft(){return {school:val('eduSchool'),degree:val('eduDegree'),location:val('eduLocation'),start:val('eduStart'),end:val('eduEnd'),description:val('eduDescription')}}
+ function row(x){
+   const parts=[];
+   if(x.school||x.degree)parts.push([x.school,x.degree].filter(Boolean).join(' — '));
+   if(x.location||x.start||x.end)parts.push([x.location,[x.start,x.end].filter(Boolean).join(' – ')].filter(Boolean).join(' · '));
+   if(x.description)parts.push(x.description);
+   return parts.join('\n');
+ }
+ function renderEducationCanonical(){
+   const heading=document.getElementById('eduHeading'),section=heading&&heading.closest('section');if(!section)return;
+   let out=document.getElementById('educationCanonicalPreview');
+   if(!out){out=document.createElement('div');out.id='educationCanonicalPreview';out.style.whiteSpace='pre-line';heading.insertAdjacentElement('afterend',out)}
+   // Hide every legacy education output so stale values cannot cover the live one.
+   [...section.children].forEach(el=>{if(el!==heading&&el!==out&&!el.classList.contains('divider'))el.style.display='none'});
+   const d=draft(),hasDraft=Object.values(d).some(Boolean);
+   let rows=saved().map(row).filter(Boolean);
+   // While typing, show current draft first; this makes every keystroke visible immediately.
+   if(hasDraft)rows=[row(d),...rows];
+   else {
+     const quick=(document.getElementById('educationQuickText')?.value||localStorage.getItem('chyper_education_quick')||'').trim();
+     if(!rows.length&&quick)rows=[quick];
+   }
+   out.innerHTML='';
+   rows.forEach((t,i)=>{const block=document.createElement('div');block.style.whiteSpace='pre-line';if(i)block.style.marginTop='10px';block.textContent=t;out.appendChild(block)});
+   out.style.display=rows.length?'block':'none';
+ }
+ function bind(){
+   ids.forEach(id=>{const e=document.getElementById(id);if(e&&!e.dataset.eduCanonical){e.dataset.eduCanonical='1';['input','keyup','change'].forEach(ev=>e.addEventListener(ev,renderEducationCanonical))}});
+   const add=document.getElementById('addEducationBtn');if(add&&!add.dataset.eduCanonical){add.dataset.eduCanonical='1';add.addEventListener('click',()=>setTimeout(renderEducationCanonical,0))}
+   const list=document.getElementById('educationList');if(list&&!list.dataset.eduCanonical){list.dataset.eduCanonical='1';list.addEventListener('click',()=>setTimeout(renderEducationCanonical,0))}
+   renderEducationCanonical();
+ }
+ window.renderEducationCanonical=renderEducationCanonical;
+ document.addEventListener('DOMContentLoaded',bind);setTimeout(bind,100);setTimeout(bind,800);
+})();
+</script>
