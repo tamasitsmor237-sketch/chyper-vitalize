@@ -1304,3 +1304,41 @@ document.getElementById('addEducationBtn').onclick=()=>{
  window.syncCVExampleLanguage=sync;setTimeout(sync,1100);
 })();
 </script>
+<style>
+.langStrengthRow{display:grid;grid-template-columns:minmax(120px,1fr) 2fr 86px;gap:10px;align-items:center;margin:9px 0}
+.langStrengthRow input[type=range]{width:100%;accent-color:var(--accent,#8b5cf6)}
+.langStrengthLabel{font-size:12px;opacity:.72;text-align:right}
+</style>
+<script>
+/* Language knowledge strength sliders (CEFR A1-C2) for manual CV editor. */
+(function(){
+ const levels=['A1','A2','B1','B2','C1','C2'];
+ const labels={hu:['Alapszint','Alapszint','Középszint','Középszint','Haladó','Anyanyelvi szint'],en:['Beginner','Elementary','Intermediate','Upper-intermediate','Advanced','Proficient'],de:['Anfänger','Grundkenntnisse','Mittelstufe','Gute Mittelstufe','Fortgeschritten','Nahezu muttersprachlich'],fr:['Débutant','Élémentaire','Intermédiaire','Intermédiaire avancé','Avancé','Maîtrise'],es:['Principiante','Elemental','Intermedio','Intermedio alto','Avanzado','Dominio']};
+ function lc(){const v=(document.querySelector('select')?.value||document.documentElement.lang||'hu').toLowerCase();return ['en','de','fr','es'].find(x=>v.startsWith(x))||'hu'}
+ function parse(){
+   const ta=document.getElementById('languages'); if(!ta)return[];
+   return ta.value.split(/\n+/).map(x=>x.trim()).filter(Boolean).map(line=>{
+     const p=line.split(/\s*[—–-]\s*/); return {name:p[0]||'',level:(p[1]||'B2').toUpperCase()};
+   });
+ }
+ function render(){
+   const ta=document.getElementById('languages'); if(!ta)return;
+   let box=document.getElementById('languageStrengthSliders');
+   if(!box){box=document.createElement('div');box.id='languageStrengthSliders';ta.insertAdjacentElement('afterend',box)}
+   const data=parse(); box.innerHTML='';
+   data.forEach((o,i)=>{
+     const idx=Math.max(0,levels.indexOf(o.level)); const row=document.createElement('div');row.className='langStrengthRow';
+     row.innerHTML='<span>'+o.name+'</span><input type="range" min="0" max="5" step="1" value="'+idx+'" data-i="'+i+'"><span class="langStrengthLabel">'+levels[idx]+' · '+(labels[lc()]||labels.hu)[idx]+'</span>';
+     row.querySelector('input').oninput=function(){
+       const n=+this.value, lines=parse(); if(!lines[this.dataset.i])return;
+       lines[this.dataset.i].level=levels[n]; ta.value=lines.map(x=>x.name+' — '+x.level).join('\n');
+       this.nextElementSibling.textContent=levels[n]+' · '+(labels[lc()]||labels.hu)[n];
+       ta.dispatchEvent(new Event('input',{bubbles:true}));
+     }; box.appendChild(row);
+   });
+ }
+ document.addEventListener('input',e=>{if(e.target?.id==='languages')setTimeout(render,20)});
+ document.addEventListener('change',e=>{if(e.target?.tagName==='SELECT')setTimeout(render,80)});
+ window.renderLanguageStrengthSliders=render;setTimeout(render,1200);
+})();
+</script>
