@@ -1174,3 +1174,39 @@ document.getElementById('addEducationBtn').onclick=()=>{
 #educationApprovedPreview,#educationPreview,#educationCanonicalPreview,#structuredEducationPreview,#pEducationDraft,#pEducationAI{font-size:12px;line-height:1.45;font-weight:400}
 #educationApprovedPreview b,#educationPreview b,#educationCanonicalPreview b,#structuredEducationPreview b{font-size:12px;line-height:1.45;font-weight:600}
 </style>
+<style>
+.cvExample{opacity:.42;cursor:pointer;transition:opacity .15s}.cvExample:hover{opacity:.65}.cvExample.hidden{display:none}
+</style>
+<script>
+/* Empty-state CV examples: realistic guidance only, disappear when clicked or real data is entered. */
+(function(){
+ const examples={
+  skills:'Kommunikáció\nCsapatmunka\nMicrosoft Office',
+  languages:'Magyar — anyanyelvi\nAngol — középfok',
+  profile:'Motivált, megbízható pályakezdő, aki gyorsan tanul és szívesen dolgozik csapatban.',
+  experience:'Értékesítési munkatárs\nMinta Kft. · Budapest\n2024 – 2025\nVásárlók segítése és napi feladatok ellátása.',
+  education:'Budapesti Gazdasági Szakképzési Centrum\nKereskedelmi képzés\nBudapest · 2020 – 2024'
+ };
+ function real(id){return (document.getElementById(id)?.value||'').trim()}
+ function saved(k){return (localStorage.getItem(k)||'').trim()}
+ function hasEducation(){let a=[];try{a=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){}return a.length||['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].some(id=>real(id))||saved('chyper_education_quick')}
+ function hasExperience(){let a=[];try{a=JSON.parse(localStorage.getItem('chyper_experience_v1')||'[]')}catch(e){}return a.length||['expRoleInput','expCompanyInput','expLocationInput','expStartInput','expEndInput','expDescriptionInput'].some(id=>real(id))||saved('chyper_experience_ai')}
+ function put(headingId,id,text,hasReal){
+   const h=document.getElementById(headingId),s=h&&h.closest('section');if(!s)return;
+   let x=document.getElementById(id);
+   if(hasReal){if(x)x.remove();return}
+   if(!x){x=document.createElement('div');x.id=id;x.className='cvExample';x.style.whiteSpace='pre-line';x.title='Kattints a példa eltüntetéséhez';x.onclick=()=>x.remove();s.appendChild(x)}
+   x.textContent=text;
+ }
+ function refresh(){
+   put('skillsHeading','exampleSkills',examples.skills,!!real('skills'));
+   put('langHeading','exampleLanguages',examples.languages,!!real('languages')||!!saved('chyper_languages_v1'));
+   put('profileHeading','exampleProfile',examples.profile,!!real('profile'));
+   put('expHeading','exampleExperience',examples.experience,!!hasExperience());
+   put('eduHeading','exampleEducation',examples.education,!!hasEducation());
+ }
+ document.addEventListener('input',refresh);document.addEventListener('change',refresh);
+ document.addEventListener('click',()=>setTimeout(refresh,30));
+ window.refreshCVExamples=refresh;setTimeout(refresh,700);
+})();
+</script>
