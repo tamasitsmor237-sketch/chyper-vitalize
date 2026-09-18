@@ -1356,28 +1356,34 @@ document.getElementById('addEducationBtn').onclick=()=>{
  }
  function closeRoom(){voiceClosing=true;$('mockInterviewRoom').classList.remove('open');if(activeRecognition){try{activeRecognition.abort()}catch(e){}activeRecognition=null}if(kokoroAudio){kokoroAudio.pause();kokoroAudio=null}}
  async function startVoiceListening(){
-   if(mode!=='voice'||voiceClosing)return;
+   if(mode!=='voice'||voiceClosing||questionBusy)return;
    $('interviewStatus').textContent='Mikrofon indítása…';
    try{
      if(!navigator.mediaDevices?.getUserMedia)throw new Error('no-media');
      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
      stream.getTracks().forEach(t=>t.stop());
-   }catch(e){
-     $('voicePulse').classList.remove('on');
-     $('interviewStatus').textContent='⚠️ Nincs mikrofonengedély. Engedélyezd a mikrofont ennél az oldalnál, majd nyomd meg újra a mikrofont.';
-     return;
-   }
+   }catch(e){$('voicePulse').classList.remove('on');$('interviewStatus').textContent='⚠️ Engedélyezd a mikrofont ennél az oldalnál.';return}
    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-   if(!SR){$('interviewStatus').textContent='⚠️ Ez a böngésző nem támogatja ezt a hangfelismerést. Próbáld Chrome-ban.';return}
+   if(!SR){$('interviewStatus').textContent='⚠️ A Voice interjúhoz Chrome szükséges ezen az eszközön.';return}
    if(activeRecognition){try{activeRecognition.abort()}catch(e){}}
    const rec=new SR();activeRecognition=rec;rec.lang='en-US';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
-   let finalText='',lastText='';
-   rec.onstart=()=>{$('voicePulse').classList.add('on');$('interviewStatus').textContent='🎙️ Hallgatlak… beszélj most.'};
+   let transcript='',submitted=false;
+   const submit=()=>{
+     if(submitted||questionBusy||voiceClosing)return;
+     const answer=transcript.trim();
+     if(!answer)return;
+     submitted=true;activeRecognition=null;rec.onend=null;
+     try{rec.stop()}catch(e){}
+     $('voicePulse').classList.remove('on');$('interviewStatus').textContent='Válasz feldolgozása…';
+     nextQuestion(answer);
+   };
+   rec.onstart=()=>{$('voicePulse').classList.add('on');$('interviewStatus').textContent='🎙️ Hallgatlak…'};
    rec.onspeechstart=()=>{$('interviewStatus').textContent='🎙️ Hallom a hangodat…'};
-   rec.onresult=e=>{let interim='',hasFinal=false;for(let i=0;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal){finalText+=t+' ';hasFinal=true}else interim+=t}lastText=(finalText+interim).trim();$('interviewAnswer').value=lastText;if(lastText)$('interviewStatus').textContent='🎙️ Hallom: '+lastText;if(hasFinal&&lastText&&!questionBusy){const answer=lastText;rec.onend=null;activeRecognition=null;$('voicePulse').classList.remove('on');$('interviewStatus').textContent='Válasz feldolgozása…';nextQuestion(answer);setTimeout(()=>{try{rec.stop()}catch(x){}},0)}};
-   rec.onerror=e=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(e.error!=='aborted')$('interviewStatus').textContent='⚠️ Mikrofon hiba: '+e.error+'. Engedélyezd a mikrofont vagy próbáld Chrome-ban.'};
-   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');const ans=($('interviewAnswer').value||lastText).trim();if(ans&&mode==='voice'&&!voiceClosing&&!questionBusy){$('interviewStatus').textContent='Válasz feldolgozása…';nextQuestion(ans)}else if(mode==='voice'&&!voiceClosing)$('interviewStatus').textContent='Nem érzékeltem beszédet. Nyomd meg a mikrofont és beszélj újra.'};
-   try{rec.start()}catch(e){activeRecognition=null;$('interviewStatus').textContent='⚠️ A hangfelismerés nem indult el. Próbáld Chrome-ban.'}
+   rec.onresult=e=>{let parts=[];for(let i=0;i<e.results.length;i++)parts.push(e.results[i][0].transcript);transcript=parts.join(' ').trim();$('interviewAnswer').value=transcript;if(transcript)$('interviewStatus').textContent='🎙️ Hallom: '+transcript};
+   rec.onspeechend=()=>setTimeout(submit,350);
+   rec.onerror=e=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(e.error!=='aborted')$('interviewStatus').textContent='⚠️ Mikrofon hiba: '+e.error};
+   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(transcript.trim())submit();else if(!voiceClosing)$('interviewStatus').textContent='Nem érzékeltem beszédet. Nyomd meg a mikrofont és próbáld újra.'};
+   try{rec.start()}catch(e){activeRecognition=null;$('interviewStatus').textContent='⚠️ A mikrofon nem indult el.'}
  }
  async function nextQuestion(answer){
    if(questionBusy)return;questionBusy=true;
