@@ -742,6 +742,8 @@ try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Typ
    items.forEach((x,i)=>{const d=document.createElement('div');d.className='eduItem';d.innerHTML='<button type="button" data-i="'+i+'">✕</button><b>'+esc(x.school)+'</b>'+(x.degree?' — '+esc(x.degree):'')+'<br><small>'+esc([x.location,x.start&&x.end?x.start+' – '+x.end:x.start||x.end].filter(Boolean).join(' · '))+'</small>'+(x.description?'<div>'+esc(x.description)+'</div>':'');list.appendChild(d)});
    list.querySelectorAll('button').forEach(b=>b.onclick=()=>{items.splice(+b.dataset.i,1);save()});
    syncCV();
+   if(typeof window.renderCVFromEditor==='function')window.renderCVFromEditor();
+   if(typeof window.renderEducationCanonical==='function')window.renderEducationCanonical();
   }
   function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
   function save(){localStorage.setItem('chyper_education_v1',JSON.stringify(items));draw()}
@@ -762,7 +764,7 @@ try{const r=await fetch("/api/ai-interview",{method:"POST",headers:{"Content-Typ
   ['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].forEach(id=>{const e=document.getElementById(id);if(e){e.addEventListener('input',liveEducationDraft);e.addEventListener('change',liveEducationDraft)}});
 document.getElementById('addEducationBtn').onclick=()=>{
    const x={school:eduSchool.value.trim(),degree:eduDegree.value.trim(),location:eduLocation.value.trim(),start:eduStart.value.trim(),end:eduEnd.value.trim(),description:eduDescription.value.trim()};
-   if(!x.school&&!x.degree)return;items.push(x);const draft=document.getElementById('pEducationDraft');if(draft)draft.style.display='none';['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].forEach(id=>document.getElementById(id).value='');save();
+   if(!x.school&&!x.degree)return;items.push(x);const draft=document.getElementById('pEducationDraft');if(draft)draft.style.display='none';['eduSchool','eduDegree','eduLocation','eduStart','eduEnd','eduDescription'].forEach(id=>document.getElementById(id).value='');save();setTimeout(()=>{if(typeof window.renderCVFromEditor==='function')window.renderCVFromEditor();if(typeof window.renderEducationCanonical==='function')window.renderEducationCanonical();},0);
   };
   draw();
  }
@@ -1150,5 +1152,21 @@ document.getElementById('addEducationBtn').onclick=()=>{
  document.addEventListener('click',e=>{if(e.target?.id==='addEducationBtn'||e.target?.id==='addExperienceBtn'||e.target?.closest?.('#educationList button')||e.target?.closest?.('#experienceList button'))setTimeout(renderAll,0)});
  window.renderCVFromEditor=renderAll;
  setTimeout(renderAll,50);setTimeout(renderAll,500);
+})();
+</script><script>
+(function(){
+ function escApproved(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+ function showApprovedEducation(){
+   const h=document.getElementById('eduHeading'),s=h&&h.closest('section');if(!s)return;
+   let out=document.getElementById('educationApprovedPreview');if(!out){out=document.createElement('div');out.id='educationApprovedPreview';h.insertAdjacentElement('afterend',out)}
+   let a=[];try{a=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){}
+   if(!a.length){out.innerHTML='';out.style.display='none';return}
+   [...s.children].forEach(x=>{if(x!==h&&x!==out&&!x.classList.contains('divider'))x.style.display='none'});
+   out.style.display='block';
+   out.innerHTML=a.map(x=>'<div style="margin-bottom:10px">'+([x.school,x.degree].filter(Boolean).length?'<b>'+escApproved([x.school,x.degree].filter(Boolean).join(' — '))+'</b>':'')+([x.location,x.start,x.end].some(Boolean)?'<div>'+escApproved([x.location,[x.start,x.end].filter(Boolean).join(' – ')].filter(Boolean).join(' · '))+'</div>':'')+(x.description?'<div style="white-space:pre-line">'+escApproved(x.description)+'</div>':'')+'</div>').join('');
+ }
+ window.showApprovedEducation=showApprovedEducation;
+ document.addEventListener('click',e=>{if(e.target?.id==='addEducationBtn'||e.target?.closest?.('#educationList button'))setTimeout(showApprovedEducation,20)});
+ setTimeout(showApprovedEducation,600);
 })();
 </script>
