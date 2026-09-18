@@ -13,6 +13,14 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.get('/favicon.ico')
+def favicon_ico():
+    return app.send_static_file('favicon.svg')
+
+@app.get('/apple-touch-icon.png')
+def apple_touch_icon():
+    return app.send_static_file('favicon.svg')
+
 @app.get('/health')
 def health():
     return jsonify(status='ok')
