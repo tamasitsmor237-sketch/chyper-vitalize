@@ -1311,7 +1311,7 @@ document.getElementById('addEducationBtn').onclick=()=>{
 <script>
 (function(){
  const $=id=>document.getElementById(id), history=[];
- let mode='text', interviewStyle='professional', currentQuestion='',activeRecognition=null,voiceClosing=false;
+ let mode='text', interviewStyle='professional', currentQuestion='',activeRecognition=null,voiceClosing=false,questionBusy=false;
  function val(id){return $(id)?.value||''}
  function cvData(){return {role:val('role'),profile:val('profile'),skills:val('skills'),experience:localStorage.getItem('chyper_experience_ai')||localStorage.getItem('chyper_experience_v1')||'',education:localStorage.getItem('chyper_education_quick')||localStorage.getItem('chyper_education_v1')||'',languages:localStorage.getItem('chyper_languages_v1')||val('languages')}}
  function lang(){const e=$('uiLang');return e?.selectedOptions?.[0]?.textContent||e?.value||'English'}
@@ -1347,9 +1347,9 @@ document.getElementById('addEducationBtn').onclick=()=>{
        for(let i=0;i<samples.length;i++){const x=Math.max(-1,Math.min(1,samples[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}
        blob=new Blob([buf],{type:'audio/wav'});
      }
-     if(!blob)throw new Error('Unsupported Kokoro audio output');
+     if(!blob&&out?.audio?.audio instanceof Float32Array){const samples=out.audio.audio,sr=out.audio.sampling_rate||24000;const buf=new ArrayBuffer(44+samples.length*2),v=new DataView(buf);const s=(o,x)=>{for(let i=0;i<x.length;i++)v.setUint8(o+i,x.charCodeAt(i))};s(0,'RIFF');v.setUint32(4,36+samples.length*2,true);s(8,'WAVE');s(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);s(36,'data');v.setUint32(40,samples.length*2,true);for(let i=0;i<samples.length;i++){const x=Math.max(-1,Math.min(1,samples[i]));v.setInt16(44+i*2,x<0?x*32768:x*32767,true)}blob=new Blob([buf],{type:'audio/wav'})}if(!blob)throw new Error('Unsupported Kokoro audio output');
      const url=URL.createObjectURL(blob);kokoroAudio=new Audio(url);
-     kokoroAudio.onended=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent='';if(mode==='voice'&&!voiceClosing)startVoiceListening()};
+     kokoroAudio.onended=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent='';if(mode==='voice'&&!voiceClosing)setTimeout(startVoiceListening,250)};
      kokoroAudio.onerror=()=>{URL.revokeObjectURL(url);$('interviewStatus').textContent=''};
      await kokoroAudio.play();
    }catch(e){console.error('Kokoro voice error',e);$('interviewStatus').textContent='A természetes angol hang most nem tölthető be. Az interjú írásban továbbra is működik.'}
@@ -1364,10 +1364,12 @@ document.getElementById('addEducationBtn').onclick=()=>{
    let finalText='';$('voicePulse').classList.add('on');$('interviewStatus').textContent='Hallgatlak…';
    rec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=t+' ';else interim+=t}$('interviewAnswer').value=(finalText+interim).trim()};
    rec.onerror=e=>{activeRecognition=null;$('voicePulse').classList.remove('on');if(e.error!=='aborted')$('interviewStatus').textContent='Nem sikerült felismerni a hangot. Nyomd meg a mikrofont vagy válaszolj írásban.'};
-   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');const a=$('interviewAnswer').value.trim();if(a&&mode==='voice'&&!voiceClosing){$('interviewStatus').textContent='Válasz feldolgozása…';nextQuestion(a)}else if(mode==='voice'&&!voiceClosing)$('interviewStatus').textContent='Nem hallottam választ. Nyomd meg a mikrofont az újrapróbáláshoz.'};
+   rec.onend=()=>{activeRecognition=null;$('voicePulse').classList.remove('on');const a=$('interviewAnswer').value.trim();if(a&&mode==='voice'&&!voiceClosing&&!questionBusy){$('interviewStatus').textContent='Válasz feldolgozása…';nextQuestion(a)}else if(mode==='voice'&&!voiceClosing)$('interviewStatus').textContent='Nem hallottam választ. Nyomd meg a mikrofont az újrapróbáláshoz.'};
    try{rec.start()}catch(e){$('interviewStatus').textContent='A mikrofon nem indítható el.'}
  }
  async function nextQuestion(answer){
+   if(questionBusy)return;questionBusy=true;
+   if(activeRecognition){try{activeRecognition.abort()}catch(e){}activeRecognition=null}
    if(currentQuestion&&answer)history.push({question:currentQuestion,answer});
    $('interviewStatus').textContent='AI kérdés készítése…';$('sendInterviewAnswer').disabled=true;
    try{
@@ -1376,14 +1378,14 @@ document.getElementById('addEducationBtn').onclick=()=>{
     currentQuestion=d.question;$('interviewQuestion').textContent=currentQuestion;$('interviewAnswer').value='';$('interviewStatus').textContent='';
     if(mode==='voice')await speakKokoro(currentQuestion)
    }catch(e){$('interviewStatus').textContent='Az interjú most nem tudta elkészíteni a következő kérdést. Próbáld újra.'}
-   finally{$('sendInterviewAnswer').disabled=false}
+   finally{questionBusy=false;$('sendInterviewAnswer').disabled=false}
  }
- function start(m){voiceClosing=false;mode=m;$('interviewModeChoices').style.display='none';$('interviewStylePicker').style.display='none';$('interviewModePrompt').style.display='none';$('interviewSession').style.display='block';$('speakInterviewAnswer').style.display=m==='voice'?'inline-block':'none';nextQuestion('')}
+ function start(m){voiceClosing=false;questionBusy=false;mode=m;$('interviewModeChoices').style.display='none';$('interviewStylePicker').style.display='none';$('interviewModePrompt').style.display='none';$('interviewSession').style.display='block';$('speakInterviewAnswer').style.display=m==='voice'?'inline-block':'none';nextQuestion('')}
  function begin(){closeOffer();$('mockInterviewRoom').classList.add('open')}
  $('startInterviewOffer').onclick=begin;$('skipInterviewOffer').onclick=closeOffer;document.querySelector('[data-close-offer]').onclick=closeOffer;document.querySelector('[data-close-room]').onclick=closeRoom;
  document.querySelectorAll('#interviewStylePicker [data-style]').forEach(b=>b.onclick=()=>{document.querySelectorAll('#interviewStylePicker [data-style]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');interviewStyle=b.dataset.style});
  $('textInterviewMode').onclick=()=>start('text');$('voiceInterviewMode').onclick=()=>start('voice');
- $('sendInterviewAnswer').onclick=()=>{const a=$('interviewAnswer').value.trim();if(a)nextQuestion(a)};
+ $('sendInterviewAnswer').onclick=()=>{const a=$('interviewAnswer').value.trim();if(a&&!questionBusy)nextQuestion(a)};
  $('interviewAnswer').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();const a=e.target.value.trim();if(a)nextQuestion(a)}});
  $('speakInterviewAnswer').onclick=startVoiceListening;
 })();
