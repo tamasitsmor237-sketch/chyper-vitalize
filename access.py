@@ -51,7 +51,7 @@ def current_user(c):
     return c.execute('SELECT u.* FROM users u JOIN sessions s ON s.user_id=u.id WHERE s.token=? AND s.expires>?', (digest(token), now())).fetchone()
 
 def status(u):
-    return {'email': u['email'], 'active': u['expires'] > now(), 'expires_at': u['expires'], 'purchased': u['expires'] > 0}
+    return {'server_time': now(), 'email': u['email'], 'active': u['expires'] > now(), 'expires_at': u['expires'], 'purchased': u['expires'] > 0}
 
 def login_response(c, u, recovery=None):
     token = secrets.token_urlsafe(32)
@@ -134,7 +134,7 @@ def account_action(action):
             r.delete_cookie(COOKIE)
             return r
         # Database-backed rate limit survives process restarts and multiple workers.
-        key = digest(request.remote_addr or '')
+        key = digest('account:'+email)
         c.execute('INSERT INTO attempts VALUES(?,?,1) ON CONFLICT(key) DO UPDATE SET count=CASE WHEN start<? THEN 1 ELSE count+1 END,start=CASE WHEN start<? THEN excluded.start ELSE start END', (key, now(), now()-900, now()-900))
         c.commit()
         if c.execute('SELECT count FROM attempts WHERE key=?', (key,)).fetchone()[0] > 20:
@@ -238,6 +238,7 @@ def webhook():
                 # Can arrive before the checkout-creation transaction commits.
                 return jsonify(error='Order not ready'), 503
             grant(c,s,int(event.created))
-        if not purchase_emails.deliver(s.id, db):
+        if s.payment_status == 'paid' and not purchase_emails.deliver(s.id, db):
             return jsonify(error='Purchase email pending; retry notification'), 503
     return jsonify(ok=True)
+
