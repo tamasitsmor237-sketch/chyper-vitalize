@@ -1317,7 +1317,8 @@ document.getElementById('addEducationBtn').onclick=()=>{
   sr:{skills:['Komunikacija','Timski rad','Microsoft Office'],profile:'Motivisana i pouzdana osoba koja brzo uči i voli timski rad.',langs:['Srpski — maternji','Engleski — srednji nivo'],exp:['Član tima',"McDonald’s · Beograd",'2024 – 2025','Rad sa gostima i timski rad.'],edu:['Harvard University','Poslovna administracija','Cambridge, MA · 2021 – 2025']}
  };
  function code(){
-   const s=document.querySelector('select:has(option:checked)'); const v=(s?.value||s?.selectedOptions?.[0]?.textContent||document.documentElement.lang||'hu').toLowerCase();
+   const s=document.getElementById('cvLang');
+   const v=(s?.value||document.documentElement.lang||'hu').toLowerCase();
    if(v.includes('fr'))return'fr';if(v.includes('de'))return'de';if(v.includes('es'))return'es';if(v.includes('it'))return'it';if(v.includes('port')||v.startsWith('pt'))return'pt';if(v.includes('neder')||v.startsWith('nl'))return'nl';if(v.includes('срп')||v.includes('srp')||v.startsWith('sr'))return'sr';if(v.includes('english')||v.startsWith('en'))return'en';return'hu';
  }
  function empty(id){return !(document.getElementById(id)?.value||'').trim()}
@@ -1333,9 +1334,9 @@ document.getElementById('addEducationBtn').onclick=()=>{
    const pp=document.getElementById('pProfile');if(pp&&empty('profile'))pp.textContent=x.profile;
    const pl=document.getElementById('pLanguages');if(pl&&empty('languages'))pl.innerHTML=x.langs.join('<br>');
  }
- document.addEventListener('change',e=>{if(e.target?.tagName==='SELECT')setTimeout(sync,60)});
+ document.addEventListener('change',e=>{if(e.target?.id==='cvLang'||e.target?.id==='uiLang')setTimeout(sync,60)});
  const ui=document.getElementById('uiLang');if(ui)ui.addEventListener('change',()=>setTimeout(sync,80));
- window.syncCVExampleLanguage=sync;setTimeout(sync,1100);
+ window.syncCVExampleLanguage=sync;setTimeout(sync,0);setTimeout(sync,1100);
 })();
 </script>
 <style>
