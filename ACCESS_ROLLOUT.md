@@ -35,3 +35,24 @@ Tests cover the exact expiration boundary for all three plans, reopening an acco
 - Existing UI has multiple independent state restorers; dynamic education/experience editing must be exercised in a browser.
 - Concurrent writes are rejected using a revision counter. Browser QA must exercise conflict recovery and photo autosave.
 - Verify proxy-aware login rate limiting on Railway; the current conservative DB limiter uses the socket peer IP and may group visitors behind a proxy.
+
+## Purchase thank-you email
+
+The paid-order transaction now queues one message per order in a durable `purchase_emails` outbox. The webhook sends it to the purchasing account's stored email address only after payment validation. Retries reuse the same immutable payload and Resend idempotency key; a stored provider ID prevents subsequent sends. Provider acceptance is not a guarantee of inbox delivery. A timeout never removes the purchased access.
+
+Template (Hungarian, as requested):
+
+- Subject: `Köszönjük a vásárlásodat!`
+- Text: `Köszönjük a vásárlásodat és a bizalmadat!` followed by the signature `Chyper`.
+
+Activation prerequisites, in addition to the account rollout gates above:
+
+1. Connect/configure a Resend account and verify the sender's domain. The sender address must be selected by the owner; none has been fabricated.
+2. Store `RESEND_API_KEY` as a Railway secret and `PURCHASE_EMAIL_FROM` as `Chyper <verified-address>`. Never commit keys. The current production configuration has neither variable.
+3. Configure a reliable scheduled worker running `python -m purchase_emails` against the same persistent database to retry queued messages if webhook retries have ended. Account refresh also drains its user's queued messages. Do not run the worker on a separate unshared ephemeral database.
+4. Provider idempotency lasts 24 hours. This implementation stops automatic retries after 23 hours from the first attempt and marks the message `review`; inspect provider logs to resolve ambiguous sends without duplicate emails.
+5. Send an explicitly authorized end-to-end test to an owner's test address before enabling live purchase notifications. Tests in `test_purchase_emails.py` mock the provider; no real email was sent.
+
+Reference: https://resend.com/docs/api-reference/emails/send-email and https://resend.com/docs/dashboard/emails/idempotency-keys
+
+Service provisioning was not completed: Stripe Projects CLI is not installed in this runtime, and no existing mail-service credentials or verified sender are configured on the production service.
