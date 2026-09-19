@@ -131,3 +131,4 @@ Interview so far: %s''' % (style_rule, language, json.dumps(cv, ensure_ascii=Fal
 
 from access import install
 install(app)
+
