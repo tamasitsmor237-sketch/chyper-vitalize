@@ -537,7 +537,26 @@ function setAll(){
   if(labs[4]) labs[4].textContent=a[12];
   if(labs[5]) labs[5].textContent=a[13];
 
-  [a[14],a[15],a[16],a[17],a[18]].forEach((x,i)=>setText(document.getElementById(['skillsHeading','langHeading','eduHeading','profileHeading','expHeading'][i]),x));
+  const cvHeadings={
+    "Magyar":['Készségek','Nyelvek','Tanulmányok','Szakmai profil','Tapasztalat'],
+    "English (US)":['Skills','Languages','Education','Profile','Experience'],
+    "English (UK)":['Skills','Languages','Education','Profile','Experience'],
+    "Deutsch":['Fähigkeiten','Sprachen','Ausbildung','Profil','Berufserfahrung'],
+    "Français":['Compétences','Langues','Formation','Profil','Expérience'],
+    "Español":['Habilidades','Idiomas','Educación','Perfil','Experiencia'],
+    "Italiano":['Competenze','Lingue','Istruzione','Profilo','Esperienza'],
+    "Português":['Competências','Idiomas','Formação','Perfil','Experiência'],
+    "Nederlands":['Vaardigheden','Talen','Opleiding','Profiel','Werkervaring'],
+    "Polski":['Umiejętności','Języki','Wykształcenie','Profil','Doświadczenie'],
+    "Čeština":['Dovednosti','Jazyky','Vzdělání','Profil','Zkušenosti'],
+    "Slovenčina":['Zručnosti','Jazyky','Vzdelanie','Profil','Skúsenosti'],
+    "Română":['Competențe','Limbi','Educație','Profil','Experiență'],
+    "Hrvatski":['Vještine','Jezici','Obrazovanje','Profil','Iskustvo'],
+    "Slovenščina":['Veščine','Jeziki','Izobrazba','Profil','Izkušnje'],
+    "Srpski":['Veštine','Jezici','Obrazovanje','Profil','Iskustvo'],
+    "Türkçe":['Beceriler','Diller','Eğitim','Profil','Deneyim']
+  };
+  (cvHeadings[cvLang.value]||['Skills','Languages','Education','Profile','Experience']).forEach((x,i)=>setText(document.getElementById(['skillsHeading','langHeading','eduHeading','profileHeading','expHeading'][i]),x));
   setText(aiStartText,a[19]); setText(downloadPayText,a[20]); setText(pdfText,a[21]); setText(changeCvLangText,a[22]);
   setText(payTitle,a[23]); setText(cardText,a[24]); setText(demoPayText,a[25]);
   setText(refTitle,a[26]); setText(refText,a[27]); setText(shareBtn,a[28]); setText(copyBtn,a[29]); setText(discountMsg,a[30]); setText(aiTitle,a[31]);
@@ -575,6 +594,7 @@ continueBtn.onclick=function(){ setAll(); go(2); };
 document.getElementById('screen2').style.display='';
 cvLang.disabled=false;
 uiLang.onchange=setAll;
+cvLang.onchange=setAll;
 document.getElementById('changeCvLangText').parentElement.onclick=function(){go(1);};
 setAll();
 })();
