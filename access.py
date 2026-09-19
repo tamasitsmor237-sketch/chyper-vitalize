@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from flask import Blueprint, request, jsonify, g
 from werkzeug.security import generate_password_hash, check_password_hash
 import stripe
+import purchase_emails
 
 bp = Blueprint('access', __name__)
 PLANS = {'day': (199, 86400), 'week': (499, 7*86400), 'month': (999, 30*86400)}
@@ -35,6 +36,7 @@ def db():
     CREATE TABLE IF NOT EXISTS orders(id TEXT PRIMARY KEY,user_id TEXT NOT NULL,plan TEXT NOT NULL,amount INTEGER NOT NULL,granted INTEGER NOT NULL DEFAULT 0);
     CREATE TABLE IF NOT EXISTS attempts(key TEXT PRIMARY KEY,start INTEGER NOT NULL,count INTEGER NOT NULL);
     ''')
+    purchase_emails.init_schema(c)
     try:
         yield c
         c.commit()
@@ -80,6 +82,7 @@ def grant(c, checkout, paid_at):
     end = max(u['expires'], paid_at) + PLANS[order['plan']][1]
     c.execute('UPDATE users SET expires=? WHERE id=?', (end, u['id']))
     c.execute('UPDATE orders SET granted=1 WHERE id=?', (order['id'],))
+    purchase_emails.enqueue(c, order['id'], u['email'])
 
 def reconcile(user_id):
     with db() as c:
@@ -91,6 +94,7 @@ def reconcile(user_id):
             charge = client().charges.retrieve(intent.latest_charge)
             with db() as c:
                 grant(c, checkout, int(charge.created))
+    purchase_emails.drain(db, user_id)
 
 def install(app):
     app.register_blueprint(bp)
@@ -234,4 +238,6 @@ def webhook():
                 # Can arrive before the checkout-creation transaction commits.
                 return jsonify(error='Order not ready'), 503
             grant(c,s,int(event.created))
+        if not purchase_emails.deliver(s.id, db):
+            return jsonify(error='Purchase email pending; retry notification'), 503
     return jsonify(ok=True)
