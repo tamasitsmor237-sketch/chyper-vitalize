@@ -54,3 +54,4 @@ class PurchaseEmailTests(AccessTests):
         with access.db() as c:self.assertEqual(c.execute('SELECT status FROM purchase_emails').fetchone()[0],'review')
 
 if __name__=='__main__':unittest.main()
+
