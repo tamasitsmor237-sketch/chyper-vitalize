@@ -85,3 +85,4 @@ if __name__=='__main__':
     from access import db
     if not drain(db):
         raise SystemExit('Some purchase messages remain pending; check configuration/provider status.')
+
