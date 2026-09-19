@@ -13,7 +13,7 @@
 <meta property="og:description" content="Create your professional CV in under one minute, download it for a low one-time price and practise with an interview practice test.">
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#2f6f8f">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Chyper","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://chypervitalize.com/","description":"A multilingual AI-assisted CV builder for creating professional PDF resumes.","offers":{"@type":"Offer","price":"3.99","priceCurrency":"EUR"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Chyper","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://chypervitalize.com/","description":"A multilingual AI-assisted CV builder for creating professional PDF resumes.","offers":{"@type":"Offer","price":"1.99","priceCurrency":"EUR"}}</script>
 <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png?v=7">
 <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png?v=7">
 <link rel="shortcut icon" href="/favicon.ico?v=7">
@@ -45,27 +45,12 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script>
-(function(){
- const V='chyper_clean_editor_v1';
- if(localStorage.getItem(V)!=='1'){
-   ['chyper_education_v1','chyper_education_quick','chyper_experience_v1','chyper_experience_ai','chyper_languages_v1','chyper_cv_checkout_state_v1','chyper_cv_full_state_v2','chyper_cv_full_state_v3'].forEach(k=>localStorage.removeItem(k));
-   localStorage.setItem(V,'1');
- }
- // A genuinely new browser-tab session starts as a fresh CV.
- // Stripe return is excluded so the paid CV can still be restored.
- const q=new URLSearchParams(location.search);
- if(!sessionStorage.getItem('chyper_active_cv_session') && q.get('payment')!=='success'){
-   ['chyper_education_v1','chyper_education_quick','chyper_experience_v1','chyper_experience_ai','chyper_languages_v1','chyper_cv_checkout_state_v1','chyper_cv_full_state_v2','chyper_cv_full_state_v3'].forEach(k=>localStorage.removeItem(k));
-   sessionStorage.setItem('chyper_active_cv_session','1');
- }
-})();
-</script></head>
+</head>
 <body>
 <section class="landing" id="landingPage">
  <nav class="landingNav"><div class="landingBrand">Chyper</div><select id="landingLanguage" aria-label="Language"></select><a class="landingNavLink" href="#features" data-land="nav">How it works</a><button class="landingCtaSmall" type="button" onclick="startBuilder()" data-land="cta">Build my CV</button></nav>
  <div class="hero">
-  <div><span class="eyebrow" data-land="eyebrow">Multilingual CV builder</span><h1 data-land="title">A professional CV, ready in minutes.</h1><p class="heroLead" data-land="lead">Create, personalise and preview your CV for free. Choose your language, refine every detail and pay only when you are ready to download the finished PDF.</p><div class="heroActions"><button class="heroPrimary" type="button" onclick="startBuilder()" data-land="primary">Create my CV →</button><button class="heroSecondary" type="button" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})" data-land="secondary">See how it works</button></div><div class="trustLine" data-land="trust">✓ Free editor and preview · ✓ 30+ languages · ✓ One simple payment</div><div class="landingPrice" id="landingPrice">From $4.69</div></div>
+  <div><span class="eyebrow" data-land="eyebrow">Multilingual CV builder</span><h1 data-land="title">A professional CV, ready in minutes.</h1><p class="heroLead" data-land="lead">Create, personalise and preview your CV for free. Choose your language, refine every detail and pay only when you are ready to download the finished PDF.</p><div class="heroActions"><button class="heroPrimary" type="button" onclick="startBuilder()" data-land="primary">Create my CV →</button><button class="heroSecondary" type="button" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})" data-land="secondary">See how it works</button></div><div class="trustLine" data-land="trust">✓ Free editor and preview · ✓ 30+ languages · ✓ One simple payment</div><div class="landingPrice" id="landingPrice">From €1.99</div></div>
   <div class="heroCard" aria-label="Professional CV preview"><div class="miniCv"><div class="miniName">BRADEN PETERS</div><div class="miniRole">Product Designer</div><div class="miniGrid"><div><div class="miniLine dark"></div><div class="miniLine"></div><div class="miniLine"></div><div class="miniLine dark"></div><div class="miniLine"></div></div><div><div class="miniLine dark"></div><div class="miniLine"></div><div class="miniLine"></div><div class="miniLine"></div><br><div class="miniLine dark"></div><div class="miniLine"></div><div class="miniLine"></div><div class="miniLine"></div><br><div class="miniLine dark"></div><div class="miniLine"></div><div class="miniLine"></div></div></div></div></div>
  </div>
  <div class="benefits" id="features"><div class="benefitGrid"><div><h3 data-land="s1t">1. Choose your language</h3><p data-land="s1p">Use the builder and create the CV in the language you need.</p></div><div><h3 data-land="s2t">2. Make it yours</h3><p data-land="s2p">Add your experience, choose an accent colour and preview every change live.</p></div><div><h3 data-land="s3t">3. Download your PDF</h3><p data-land="s3p">Pay once only when you are happy with the finished result.</p></div></div></div>
@@ -95,7 +80,7 @@ h2{margin:0 0 7px;font-size:22px}.sub{color:#6b7280;font-size:13px;line-height:1
  const initial=preferred.find(code=>packs[code])||'en';
  function setLandingLanguage(code){
    const pack=packs[code]||en;picker.value=code;document.documentElement.lang=code;
-   const prices={en:'From $4.69',hu:'Már 1 590 Ft-tól',de:'Ab 3,99 €',fr:'À partir de 3,99 €',es:'Desde 3,99 €',it:'A partire da 3,99 €',pt:'A partir de 3,99 €',pl:'Już od 16,99 zł',nl:'Vanaf €3,99',tr:"3,99 €'dan başlayan fiyatlarla"};
+   const prices={en:'From €1.99',hu:'Már 1,99 €-tól',de:'Ab 1,99 €',fr:'À partir de 1,99 €',es:'Desde 1,99 €',it:'A partire da 1,99 €',pt:'A partir de 1,99 €',pl:'Już od 1,99 €',nl:'Vanaf €1,99',tr:"1,99 €'dan başlayan fiyatlarla"};
    const price=document.getElementById('landingPrice');if(price)price.textContent=prices[code]||prices.en;
    document.querySelectorAll('[data-land]').forEach(el=>{if(pack[el.dataset.land])el.textContent=pack[el.dataset.land]});
    const heading=document.querySelector('h1[data-land="title"]');
@@ -826,7 +811,8 @@ setAll();
    if(typeof window.renderEducationCanonical==='function')window.renderEducationCanonical();
   }
   function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-  function save(){localStorage.setItem('chyper_education_v1',JSON.stringify(items));draw()}
+  function save(){localStorage.setItem('chyper_education_v1',JSON.stringify(items));draw();document.dispatchEvent(new Event('chyper:draft-changed'))}
+  document.addEventListener('chyper:draft-restored',()=>{try{items=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){items=[]}draw();});
   function syncCV(){
    const text=items.map(x=>[x.school,x.degree,x.location,[x.start,x.end].filter(Boolean).join(' – '),x.description].filter(Boolean).join(' | ')).join('\n');
    const candidates=['education','edu','studies'];for(const id of candidates){const e=document.getElementById(id);if(e){e.value=text;e.dispatchEvent(new Event('input',{bubbles:true}));break}}
@@ -904,7 +890,8 @@ document.getElementById('addEducationBtn').onclick=()=>{
     items.forEach(x=>{const d=document.createElement('div');d.className='job';d.innerHTML='<div class="jobTop"><span class="jobTitle">'+esc(x.role)+'</span><span class="jobDate">'+esc([x.start,x.end].filter(Boolean).join('–'))+'</span></div><div class="company">'+esc([x.company,x.location].filter(Boolean).join(' · '))+'</div>'+(x.description?'<p>'+esc(x.description).replace(/\n/g,'<br>')+'</p>':'');section.appendChild(d)});
   }
   function draw(){const list=document.getElementById('experienceList');list.innerHTML='';items.forEach((x,i)=>{const d=document.createElement('div');d.className='expItem';d.innerHTML='<button type="button" data-i="'+i+'">✕</button><b>'+esc(x.role)+'</b>'+(x.company?' — '+esc(x.company):'')+'<br><small>'+esc([x.location,[x.start,x.end].filter(Boolean).join('–')].filter(Boolean).join(' · '))+'</small>';list.appendChild(d)});list.querySelectorAll('button').forEach(b=>b.onclick=()=>{items.splice(+b.dataset.i,1);save()});preview()}
-  function save(){localStorage.setItem('chyper_experience_v1',JSON.stringify(items));draw()}
+  function save(){localStorage.setItem('chyper_experience_v1',JSON.stringify(items));draw();document.dispatchEvent(new Event('chyper:draft-changed'))}
+  document.addEventListener('chyper:draft-restored',()=>{try{items=JSON.parse(localStorage.getItem('chyper_experience_v1')||'[]')}catch(e){items=[]}draw();});
   document.getElementById('addExperienceBtn').onclick=()=>{const x={role:expRoleInput.value.trim(),company:expCompanyInput.value.trim(),location:expLocationInput.value.trim(),start:expStartInput.value.trim(),end:expEndInput.value.trim(),description:expDescriptionInput.value.trim()};if(!x.role&&!x.company)return;items.push(x);['expRoleInput','expCompanyInput','expLocationInput','expStartInput','expEndInput','expDescriptionInput'].forEach(id=>document.getElementById(id).value='');save()};
   draw();
  }
@@ -1474,3 +1461,7 @@ document.getElementById('addEducationBtn').onclick=()=>{
  document.addEventListener('change',e=>{if(e.target?.id==='uiLang')setTimeout(()=>{sync();mirror()},20)});setTimeout(()=>{sync();mirror()},300);
 })();
 </script>
+
+
+<script src="/static/account.js" defer></script>
+
