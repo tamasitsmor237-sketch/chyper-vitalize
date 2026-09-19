@@ -811,7 +811,8 @@ setAll();
    if(typeof window.renderEducationCanonical==='function')window.renderEducationCanonical();
   }
   function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-  function save(){localStorage.setItem('chyper_education_v1',JSON.stringify(items));draw()}
+  function save(){localStorage.setItem('chyper_education_v1',JSON.stringify(items));draw();document.dispatchEvent(new Event('chyper:draft-changed'))}
+  document.addEventListener('chyper:draft-restored',()=>{try{items=JSON.parse(localStorage.getItem('chyper_education_v1')||'[]')}catch(e){items=[]}draw();});
   function syncCV(){
    const text=items.map(x=>[x.school,x.degree,x.location,[x.start,x.end].filter(Boolean).join(' – '),x.description].filter(Boolean).join(' | ')).join('\n');
    const candidates=['education','edu','studies'];for(const id of candidates){const e=document.getElementById(id);if(e){e.value=text;e.dispatchEvent(new Event('input',{bubbles:true}));break}}
@@ -889,7 +890,8 @@ document.getElementById('addEducationBtn').onclick=()=>{
     items.forEach(x=>{const d=document.createElement('div');d.className='job';d.innerHTML='<div class="jobTop"><span class="jobTitle">'+esc(x.role)+'</span><span class="jobDate">'+esc([x.start,x.end].filter(Boolean).join('–'))+'</span></div><div class="company">'+esc([x.company,x.location].filter(Boolean).join(' · '))+'</div>'+(x.description?'<p>'+esc(x.description).replace(/\n/g,'<br>')+'</p>':'');section.appendChild(d)});
   }
   function draw(){const list=document.getElementById('experienceList');list.innerHTML='';items.forEach((x,i)=>{const d=document.createElement('div');d.className='expItem';d.innerHTML='<button type="button" data-i="'+i+'">✕</button><b>'+esc(x.role)+'</b>'+(x.company?' — '+esc(x.company):'')+'<br><small>'+esc([x.location,[x.start,x.end].filter(Boolean).join('–')].filter(Boolean).join(' · '))+'</small>';list.appendChild(d)});list.querySelectorAll('button').forEach(b=>b.onclick=()=>{items.splice(+b.dataset.i,1);save()});preview()}
-  function save(){localStorage.setItem('chyper_experience_v1',JSON.stringify(items));draw()}
+  function save(){localStorage.setItem('chyper_experience_v1',JSON.stringify(items));draw();document.dispatchEvent(new Event('chyper:draft-changed'))}
+  document.addEventListener('chyper:draft-restored',()=>{try{items=JSON.parse(localStorage.getItem('chyper_experience_v1')||'[]')}catch(e){items=[]}draw();});
   document.getElementById('addExperienceBtn').onclick=()=>{const x={role:expRoleInput.value.trim(),company:expCompanyInput.value.trim(),location:expLocationInput.value.trim(),start:expStartInput.value.trim(),end:expEndInput.value.trim(),description:expDescriptionInput.value.trim()};if(!x.role&&!x.company)return;items.push(x);['expRoleInput','expCompanyInput','expLocationInput','expStartInput','expEndInput','expDescriptionInput'].forEach(id=>document.getElementById(id).value='');save()};
   draw();
  }
@@ -1462,3 +1464,4 @@ document.getElementById('addEducationBtn').onclick=()=>{
 
 
 <script src="/static/account.js" defer></script>
+
