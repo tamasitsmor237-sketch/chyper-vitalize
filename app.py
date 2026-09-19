@@ -44,7 +44,7 @@ def create_checkout_session():
             line_items=[{
                 'price_data': {
                     'currency': 'eur',
-                    'product_data': {'name': 'Chyper Vitalize CV'},
+                    'product_data': {'name': 'Chyper CV'},
                     'unit_amount': amount,
                 },
                 'quantity': 1,
@@ -102,7 +102,7 @@ def pdf():
         c.save()
         buf.seek(0)
         name = re.sub(r'[^A-Za-z0-9_-]+', '_', str(data.get('name') or 'CV')).strip('_') or 'CV'
-        return send_file(buf, mimetype='application/pdf', as_attachment=True, download_name=f'Chyper_Vitalize_{name}.pdf')
+        return send_file(buf, mimetype='application/pdf', as_attachment=True, download_name=f'Chyper_{name}.pdf')
     except Exception:
         return jsonify(error='pdf generation failed'), 500
 
